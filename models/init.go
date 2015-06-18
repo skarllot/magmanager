@@ -18,17 +18,6 @@
 
 package models
 
-import (
-	"gopkg.in/mgo.v2/bson"
+const (
+	DATABASE_NAME = "magmanager"
 )
-
-type Location struct {
-	Name       string      `bson:"name" json:"name"`
-	Containers []Container `bson:"containers" json:"containers"`
-}
-
-type Container struct {
-	Id          bson.ObjectId `bson:"_id" json:"id"`
-	Name        string        `bson:"name" json:"name"`
-	Description string        `bson:"description" json:"description"`
-}

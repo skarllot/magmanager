@@ -21,7 +21,7 @@ package models
 import (
 	"time"
 
-	"labix.org/v2/mgo/bson"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type PoolGroup struct {

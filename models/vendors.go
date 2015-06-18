@@ -21,12 +21,17 @@ package models
 import (
 	"time"
 
-	"labix.org/v2/mgo/bson"
+	"gopkg.in/mgo.v2/bson"
+)
+
+const (
+	COLLECTION_VENDORS_NAME = "vendors"
 )
 
 type Vendor struct {
-	Name     string    `bson:"name" json:"name"`
-	Products []Product `bson:"products" json:"products"`
+	Id       bson.ObjectId `bson:"_id" json:"id"`
+	Name     string        `bson:"name" json:"name"`
+	Products []Product     `bson:"products" json:"products"`
 }
 
 type Product struct {
@@ -46,8 +51,8 @@ type Tape struct {
 
 func PreInitVendors() []Vendor {
 	return []Vendor{
-		Vendor{"None", []Product{}},
-		Vendor{"Fujifilm", []Product{
+		Vendor{bson.NewObjectId(), "None", []Product{}},
+		Vendor{bson.NewObjectId(), "Fujifilm", []Product{
 			Product{TAPE_LTO1, "LTO Ultrium 1", []Tape{}},
 			Product{TAPE_LTO2, "LTO Ultrium 2", []Tape{}},
 			Product{TAPE_LTO3, "LTO Ultrium 3", []Tape{}},
@@ -55,7 +60,7 @@ func PreInitVendors() []Vendor {
 			Product{TAPE_LTO5, "LTO Ultrium 5", []Tape{}},
 			Product{TAPE_LTO6, "LTO Ultrium 6", []Tape{}},
 		}},
-		Vendor{"HP", []Product{
+		Vendor{bson.NewObjectId(), "HP", []Product{
 			Product{TAPE_LTO1, "C7971A", []Tape{}},
 			Product{TAPE_LTO2, "C7972A", []Tape{}},
 			Product{TAPE_LTO3, "C7973A", []Tape{}},
@@ -63,9 +68,9 @@ func PreInitVendors() []Vendor {
 			Product{TAPE_LTO5, "C7975A", []Tape{}},
 			Product{TAPE_LTO6, "C7976A", []Tape{}},
 		}},
-		Vendor{"IBM", []Product{Product{}}},
-		Vendor{"Imation", []Product{}},
-		Vendor{"Sony", []Product{
+		Vendor{bson.NewObjectId(), "IBM", []Product{Product{}}},
+		Vendor{bson.NewObjectId(), "Imation", []Product{}},
+		Vendor{bson.NewObjectId(), "Sony", []Product{
 			Product{TAPE_LTO1, "LTX100G", []Tape{}},
 			Product{TAPE_LTO2, "LTX200G", []Tape{}},
 			Product{TAPE_LTO3, "LTX400G", []Tape{}},

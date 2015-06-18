@@ -16,19 +16,28 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-package models
+package main
 
 import (
-	"gopkg.in/mgo.v2/bson"
+	"time"
 )
 
-type Location struct {
-	Name       string      `bson:"name" json:"name"`
-	Containers []Container `bson:"containers" json:"containers"`
-}
+type (
+	Config struct {
+		HttpServer HttpServer `json:"httpServer"`
+		Database   Database   `json:"database"`
+	}
 
-type Container struct {
-	Id          bson.ObjectId `bson:"_id" json:"id"`
-	Name        string        `bson:"name" json:"name"`
-	Description string        `bson:"description" json:"description"`
-}
+	HttpServer struct {
+		Address string `json:"address"`
+		Port    uint16 `json:"port"`
+	}
+
+	Database struct {
+		Addrs    []string      `json:"addrs"`
+		Timeout  time.Duration `json:timeout""`
+		Database string        `json:"database"`
+		Username string        `json:"username"`
+		Password string        `json:"password"`
+	}
+)
