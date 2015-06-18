@@ -25,6 +25,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/skarllot/magmanager/models"
+	rqhttp "github.com/skarllot/raiqub/http"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -105,4 +106,30 @@ func (self *VendorController) RemoveVendor(
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (self *VendorController) Routes() rqhttp.Routes {
+	return rqhttp.Routes{
+		rqhttp.Route{
+			"GetVendor",
+			"GET",
+			"/vendor/{id}",
+			false,
+			self.GetVendor,
+		},
+		rqhttp.Route{
+			"CreateVendor",
+			"POST",
+			"/vendor",
+			false,
+			self.CreateVendor,
+		},
+		rqhttp.Route{
+			"RemoveVendor",
+			"DELETE",
+			"/vendor/{id}",
+			false,
+			self.RemoveVendor,
+		},
+	}
 }

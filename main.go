@@ -28,6 +28,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/skarllot/magmanager/controllers"
+	rqhttp "github.com/skarllot/raiqub/http"
 )
 
 const (
@@ -54,15 +55,20 @@ func main() {
 	}
 	defer session.Close()
 
-	r := mux.NewRouter()
-	vc := controllers.NewVendorController(session)
-
-	r.Methods("GET").Path("/vendor/{id}").HandlerFunc(vc.GetVendor)
-	r.Methods("POST").Path("/vendor").HandlerFunc(vc.CreateVendor)
-	r.Methods("DELETE").Path("/vendor/{id}").HandlerFunc(vc.RemoveVendor)
+	router := mux.NewRouter()
+	routes := rqhttp.MergeRoutes(
+		controllers.NewVendorController(session),
+	)
+	for _, r := range routes {
+		router.
+			Methods(r.Method).
+			Path(r.Path).
+			Name(r.Name).
+			Handler(r.ActionFunc)
+	}
 
 	fmt.Println("HTTP server listening on port", cfg.HttpServer.Port)
 	http.ListenAndServe(
 		fmt.Sprintf("%s:%d", cfg.HttpServer.Address, cfg.HttpServer.Port),
-		r)
+		router)
 }
