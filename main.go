@@ -28,7 +28,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/skarllot/magmanager/controllers"
-	"gopkg.in/mgo.v2"
 )
 
 const (
@@ -48,18 +47,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	dialInfo := &mgo.DialInfo{
-		Addrs:    cfg.Database.Addrs,
-		Timeout:  cfg.Database.Timeout,
-		Database: cfg.Database.Database,
-		Username: cfg.Database.Username,
-		Password: cfg.Database.Password,
-	}
-	session, err := mgo.DialWithInfo(dialInfo)
+	session, err := getSession(cfg.Database)
 	if err != nil {
 		log.Fatalf("CreateDbSession: %s\n", err)
 		os.Exit(1)
 	}
+	defer session.Close()
 
 	r := mux.NewRouter()
 	vc := controllers.NewVendorController(session)
