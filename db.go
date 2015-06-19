@@ -44,14 +44,14 @@ func getSession(cfg Database) (*mgo.Session, error) {
 	if err != nil {
 		return nil, err
 	}
-	if indexOfInStringSlice(cols, models.COLLECTION_VENDORS_NAME) == -1 {
+	if indexOfInStringSlice(cols, models.C_VENDORS_NAME) == -1 {
 		log.Println("The collection 'vendors' was not found")
 		vendors := models.PreInitVendors()
 
 		for _, v := range vendors {
 			err = session.
 				DB(cfg.Database).
-				C(models.COLLECTION_VENDORS_NAME).
+				C(models.C_VENDORS_NAME).
 				Insert(v)
 			if err != nil {
 				return nil, err

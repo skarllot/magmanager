@@ -57,7 +57,7 @@ func main() {
 
 	router := mux.NewRouter()
 	routes := rqhttp.MergeRoutes(
-		controllers.NewVendorController(session),
+		controllers.NewVendorController(cfg.Database.Database, session),
 	)
 	for _, r := range routes {
 		router.

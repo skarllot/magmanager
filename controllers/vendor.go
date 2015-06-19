@@ -19,7 +19,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -31,11 +30,12 @@ import (
 )
 
 type VendorController struct {
+	dbname  string
 	session *mgo.Session
 }
 
-func NewVendorController(s *mgo.Session) *VendorController {
-	return &VendorController{s}
+func NewVendorController(db string, s *mgo.Session) *VendorController {
+	return &VendorController{db, s}
 }
 
 func (self *VendorController) GetVendor(
@@ -44,26 +44,22 @@ func (self *VendorController) GetVendor(
 ) {
 	id := mux.Vars(r)["id"]
 	if !bson.IsObjectIdHex(id) {
-		w.WriteHeader(http.StatusNotFound)
+		rqhttp.JsonWrite(w, http.StatusNotFound, "")
 		return
 	}
 
 	oid := bson.ObjectIdHex(id)
 	v := models.Vendor{}
 	if err := self.session.
-		DB(models.DATABASE_NAME).
-		C(models.COLLECTION_VENDORS_NAME).
+		DB(self.dbname).
+		C(models.C_VENDORS_NAME).
 		FindId(oid).
 		One(&v); err != nil {
-		w.WriteHeader(http.StatusNotFound)
+		rqhttp.JsonWrite(w, http.StatusNotFound, "")
 		return
 	}
 
-	vj, _ := json.Marshal(v)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "%s", vj)
+	rqhttp.JsonWrite(w, http.StatusOK, v)
 }
 
 func (self *VendorController) CreateVendor(
@@ -71,19 +67,20 @@ func (self *VendorController) CreateVendor(
 	r *http.Request,
 ) {
 	v := models.Vendor{}
-	json.NewDecoder(r.Body).Decode(&v)
+	if !rqhttp.JsonRead(r.Body, &v, w) {
+		return
+	}
 	v.Id = bson.NewObjectId()
 
 	self.session.
-		DB(models.DATABASE_NAME).
-		C(models.COLLECTION_VENDORS_NAME).
+		DB(self.dbname).
+		C(models.C_VENDORS_NAME).
 		Insert(v)
 
-	vj, _ := json.Marshal(v)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, "%s", vj)
+	rqhttp.HttpHeader_Location().
+		SetValue(fmt.Sprintf("/vendor/%s", v.Id.Hex())).
+		SetWriter(w.Header())
+	rqhttp.JsonWrite(w, http.StatusCreated, v)
 }
 
 func (self *VendorController) RemoveVendor(
@@ -92,20 +89,20 @@ func (self *VendorController) RemoveVendor(
 ) {
 	id := mux.Vars(r)["id"]
 	if !bson.IsObjectIdHex(id) {
-		w.WriteHeader(http.StatusNotFound)
+		rqhttp.JsonWrite(w, http.StatusNotFound, "")
 		return
 	}
 
 	oid := bson.ObjectIdHex(id)
 	if err := self.session.
-		DB(models.DATABASE_NAME).
-		C(models.COLLECTION_VENDORS_NAME).
+		DB(self.dbname).
+		C(models.C_VENDORS_NAME).
 		RemoveId(oid); err != nil {
-		w.WriteHeader(http.StatusNotFound)
+		rqhttp.JsonWrite(w, http.StatusNotFound, "")
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	rqhttp.JsonWrite(w, http.StatusOK, "")
 }
 
 func (self *VendorController) Routes() rqhttp.Routes {
