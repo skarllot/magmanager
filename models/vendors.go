@@ -73,7 +73,7 @@ func PreInitVendors() []Vendor {
 			Product{bson.NewObjectId(), TAPE_LTO5, "C7975A", []Tape{}},
 			Product{bson.NewObjectId(), TAPE_LTO6, "C7976A", []Tape{}},
 		}},
-		Vendor{bson.NewObjectId(), "IBM", []Product{Product{}}},
+		Vendor{bson.NewObjectId(), "IBM", []Product{}},
 		Vendor{bson.NewObjectId(), "Imation", []Product{}},
 		Vendor{bson.NewObjectId(), "Sony", []Product{
 			Product{bson.NewObjectId(), TAPE_LTO1, "LTX100G", []Tape{}},
