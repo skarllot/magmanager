@@ -38,39 +38,60 @@ func NewProductController(db string, s *mgo.Session) *ProductController {
 	return &ProductController{db, s}
 }
 
-func (self *ProductController) Getproduct(
+func (self *ProductController) getVendorId(
 	w http.ResponseWriter,
 	r *http.Request,
-) {
+	id *bson.ObjectId,
+) bool {
 	vid := mux.Vars(r)["vid"]
 	if !bson.IsObjectIdHex(vid) {
 		rqhttp.JsonWrite(w, http.StatusNotFound, "Invalid vendor ID")
-		return
+		return false
 	}
+
+	*id = bson.ObjectIdHex(vid)
+	return true
+}
+
+func (self *ProductController) getProductId(
+	w http.ResponseWriter,
+	r *http.Request,
+	id *bson.ObjectId,
+) bool {
 	pid := mux.Vars(r)["pid"]
 	if !bson.IsObjectIdHex(pid) {
 		rqhttp.JsonWrite(w, http.StatusNotFound, "Invalid product ID")
+		return false
+	}
+
+	*id = bson.ObjectIdHex(pid)
+	return true
+}
+
+func (self *ProductController) GetProduct(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	var vid, pid bson.ObjectId
+	if !self.getVendorId(w, r, &vid) ||
+		!self.getProductId(w, r, &pid) {
 		return
 	}
 
 	v := models.Vendor{}
-	query := bson.M{
-		"_id": bson.ObjectIdHex(vid),
-	}
-	sel := bson.M{"products": bson.M{"$elemMatch": bson.M{
-		"_id": bson.ObjectIdHex(pid)},
-	}}
+	sel := bson.M{"products": bson.M{"$elemMatch": bson.M{"_id": pid}}}
 	if err := self.session.
 		DB(self.dbname).
 		C(models.C_VENDORS_NAME).
-		Find(query).
+		Find(bson.M{"_id": vid}).
 		Select(sel).
 		One(&v); err != nil {
 		rqhttp.JsonWrite(w, http.StatusNotFound, "Product ID not found")
 		return
 	}
 	if len(v.Products) != 1 {
-		rqhttp.JsonWrite(w, http.StatusNotFound, "More than one product was found")
+		rqhttp.JsonWrite(w, http.StatusNotFound,
+			"More than one product was found")
 	}
 
 	rqhttp.JsonWrite(w, http.StatusOK, v.Products[0])
@@ -80,19 +101,8 @@ func (self *ProductController) CreateProduct(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	vid := mux.Vars(r)["vid"]
-	if !bson.IsObjectIdHex(vid) {
-		rqhttp.JsonWrite(w, http.StatusNotFound, "Invalid vendor ID")
-		return
-	}
-
-	v := models.Vendor{}
-	if err := self.session.
-		DB(self.dbname).
-		C(models.C_VENDORS_NAME).
-		FindId(bson.ObjectIdHex(vid)).
-		One(&v); err != nil {
-		rqhttp.JsonWrite(w, http.StatusNotFound, "")
+	var vid bson.ObjectId
+	if !self.getVendorId(w, r, &vid) {
 		return
 	}
 
@@ -101,18 +111,18 @@ func (self *ProductController) CreateProduct(
 		return
 	}
 	p.Id = bson.NewObjectId()
-	v.Products = append(v.Products, p)
 
-	if err := self.session.
+	err := self.session.
 		DB(self.dbname).
 		C(models.C_VENDORS_NAME).
-		UpdateId(v.Id, v); err != nil {
+		UpdateId(vid, bson.M{"$push": bson.M{"products": p}})
+	if err != nil {
 		rqhttp.JsonWrite(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	rqhttp.HttpHeader_Location().
-		SetValue(fmt.Sprintf("/vendor/%s/product/%s", v.Id.Hex(), p.Id.Hex())).
+		SetValue(fmt.Sprintf("/vendor/%s/product/%s", vid.Hex(), p.Id.Hex())).
 		SetWriter(w.Header())
 	rqhttp.JsonWrite(w, http.StatusCreated, p)
 }
@@ -121,17 +131,17 @@ func (self *ProductController) RemoveProduct(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	id := mux.Vars(r)["id"]
-	if !bson.IsObjectIdHex(id) {
-		rqhttp.JsonWrite(w, http.StatusNotFound, "")
+	var vid, pid bson.ObjectId
+	if !self.getVendorId(w, r, &vid) ||
+		!self.getProductId(w, r, &pid) {
 		return
 	}
 
-	oid := bson.ObjectIdHex(id)
-	if err := self.session.
+	err := self.session.
 		DB(self.dbname).
 		C(models.C_VENDORS_NAME).
-		RemoveId(oid); err != nil {
+		UpdateId(vid, bson.M{"$pull": bson.M{"products": bson.M{"_id": pid}}})
+	if err != nil {
 		rqhttp.JsonWrite(w, http.StatusNotFound, "")
 		return
 	}
@@ -146,7 +156,7 @@ func (self *ProductController) Routes() rqhttp.Routes {
 			"GET",
 			"/vendor/{vid}/product/{pid}",
 			false,
-			self.Getproduct,
+			self.GetProduct,
 		},
 		rqhttp.Route{
 			"CreateProduct",
