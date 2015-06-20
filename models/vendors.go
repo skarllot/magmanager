@@ -19,8 +19,6 @@
 package models
 
 import (
-	"time"
-
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -38,50 +36,39 @@ type Product struct {
 	Id         bson.ObjectId `bson:"_id" json:"id"`
 	Technology Technology    `bson:"technology" json:"technology"`
 	Name       string        `bson:"name" json:"name"`
-	Tapes      []Tape        `bson:"tapes" json:"tapes"`
-}
-
-type Tape struct {
-	Id         bson.ObjectId `bson:"_id" json:"id"`
-	Pool       bson.ObjectId `bson:"poolId" json:"poolId"`
-	Container  bson.ObjectId `bson:"containerId" json:"containerId"`
-	Serial     string        `bson:"serial" json:"serial"`
-	Label      string        `bson:"label" json:"label"`
-	LastWrite  time.Time     `bson:"lastWrite" json:"lastWrite"`
-	LastUpdate time.Time     `bson:"lastUpdate" json:"lastUpdate"`
 }
 
 func PreInitVendors() []Vendor {
 	return []Vendor{
 		Vendor{bson.NewObjectId(), "None", []Product{
-			Product{bson.NewObjectId(), TAPE_FILE, "Local File", []Tape{}},
-			Product{bson.NewObjectId(), TAPE_FILE, "Remote File", []Tape{}},
+			Product{bson.NewObjectId(), TAPE_FILE, "Local File"},
+			Product{bson.NewObjectId(), TAPE_FILE, "Remote File"},
 		}},
 		Vendor{bson.NewObjectId(), "Fujifilm", []Product{
-			Product{bson.NewObjectId(), TAPE_LTO1, "LTO Ultrium 1", []Tape{}},
-			Product{bson.NewObjectId(), TAPE_LTO2, "LTO Ultrium 2", []Tape{}},
-			Product{bson.NewObjectId(), TAPE_LTO3, "LTO Ultrium 3", []Tape{}},
-			Product{bson.NewObjectId(), TAPE_LTO4, "LTO Ultrium 4", []Tape{}},
-			Product{bson.NewObjectId(), TAPE_LTO5, "LTO Ultrium 5", []Tape{}},
-			Product{bson.NewObjectId(), TAPE_LTO6, "LTO Ultrium 6", []Tape{}},
+			Product{bson.NewObjectId(), TAPE_LTO1, "LTO Ultrium 1"},
+			Product{bson.NewObjectId(), TAPE_LTO2, "LTO Ultrium 2"},
+			Product{bson.NewObjectId(), TAPE_LTO3, "LTO Ultrium 3"},
+			Product{bson.NewObjectId(), TAPE_LTO4, "LTO Ultrium 4"},
+			Product{bson.NewObjectId(), TAPE_LTO5, "LTO Ultrium 5"},
+			Product{bson.NewObjectId(), TAPE_LTO6, "LTO Ultrium 6"},
 		}},
 		Vendor{bson.NewObjectId(), "HP", []Product{
-			Product{bson.NewObjectId(), TAPE_LTO1, "C7971A", []Tape{}},
-			Product{bson.NewObjectId(), TAPE_LTO2, "C7972A", []Tape{}},
-			Product{bson.NewObjectId(), TAPE_LTO3, "C7973A", []Tape{}},
-			Product{bson.NewObjectId(), TAPE_LTO4, "C7974A", []Tape{}},
-			Product{bson.NewObjectId(), TAPE_LTO5, "C7975A", []Tape{}},
-			Product{bson.NewObjectId(), TAPE_LTO6, "C7976A", []Tape{}},
+			Product{bson.NewObjectId(), TAPE_LTO1, "C7971A"},
+			Product{bson.NewObjectId(), TAPE_LTO2, "C7972A"},
+			Product{bson.NewObjectId(), TAPE_LTO3, "C7973A"},
+			Product{bson.NewObjectId(), TAPE_LTO4, "C7974A"},
+			Product{bson.NewObjectId(), TAPE_LTO5, "C7975A"},
+			Product{bson.NewObjectId(), TAPE_LTO6, "C7976A"},
 		}},
 		Vendor{bson.NewObjectId(), "IBM", []Product{}},
 		Vendor{bson.NewObjectId(), "Imation", []Product{}},
 		Vendor{bson.NewObjectId(), "Sony", []Product{
-			Product{bson.NewObjectId(), TAPE_LTO1, "LTX100G", []Tape{}},
-			Product{bson.NewObjectId(), TAPE_LTO2, "LTX200G", []Tape{}},
-			Product{bson.NewObjectId(), TAPE_LTO3, "LTX400G", []Tape{}},
-			Product{bson.NewObjectId(), TAPE_LTO4, "LTX800G", []Tape{}},
-			Product{bson.NewObjectId(), TAPE_LTO5, "LTX1500G", []Tape{}},
-			Product{bson.NewObjectId(), TAPE_LTO6, "LTX2500G", []Tape{}},
+			Product{bson.NewObjectId(), TAPE_LTO1, "LTX100G"},
+			Product{bson.NewObjectId(), TAPE_LTO2, "LTX200G"},
+			Product{bson.NewObjectId(), TAPE_LTO3, "LTX400G"},
+			Product{bson.NewObjectId(), TAPE_LTO4, "LTX800G"},
+			Product{bson.NewObjectId(), TAPE_LTO5, "LTX1500G"},
+			Product{bson.NewObjectId(), TAPE_LTO6, "LTX2500G"},
 		}},
 	}
 }

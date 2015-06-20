@@ -23,8 +23,9 @@ import (
 )
 
 type Location struct {
-	Name       string      `bson:"name" json:"name"`
-	Containers []Container `bson:"containers" json:"containers"`
+	Id         bson.ObjectId `bson:"_id" json:"id"`
+	Name       string        `bson:"name" json:"name"`
+	Containers []Container   `bson:"containers" json:"containers"`
 }
 
 type Container struct {

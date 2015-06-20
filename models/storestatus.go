@@ -20,15 +20,8 @@ package models
 
 type StoreStatus string
 
-var StoreStatuses []StoreStatus
-
-func addStoreStatus(s string) StoreStatus {
-	StoreStatuses = append(StoreStatuses, StoreStatus(s))
-	return StoreStatus(s)
-}
-
-var (
-	STORE_STORED = addStoreStatus("Stored")
-	STORE_SENT   = addStoreStatus("Sent")
-	STORE_VAULT  = addStoreStatus("Vault Stored")
+const (
+	STORE_STORED = StoreStatus("Stored")
+	STORE_SENT   = StoreStatus("Sent")
+	STORE_VAULT  = StoreStatus("Vault Stored")
 )

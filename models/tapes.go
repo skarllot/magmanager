@@ -18,14 +18,23 @@
 
 package models
 
-type Technology string
+import (
+	"time"
+
+	"gopkg.in/mgo.v2/bson"
+)
 
 const (
-	TAPE_FILE = Technology("File")
-	TAPE_LTO1 = Technology("LTO-1")
-	TAPE_LTO2 = Technology("LTO-2")
-	TAPE_LTO3 = Technology("LTO-3")
-	TAPE_LTO4 = Technology("LTO-4")
-	TAPE_LTO5 = Technology("LTO-5")
-	TAPE_LTO6 = Technology("LTO-6")
+	C_TAPES_NAME = "tapes"
 )
+
+type Tape struct {
+	Id         bson.ObjectId `bson:"_id" json:"id"`
+	Product    bson.ObjectId `bson:"product_id" json:"productId"`
+	Pool       bson.ObjectId `bson:"pool_id" json:"poolId"`
+	Container  bson.ObjectId `bson:"container_id" json:"containerId"`
+	Serial     string        `bson:"serial" json:"serial"`
+	Label      string        `bson:"label" json:"label"`
+	LastWrite  time.Time     `bson:"last_write" json:"lastWrite"`
+	LastUpdate time.Time     `bson:"last_update" json:"lastUpdate"`
+}

@@ -25,8 +25,9 @@ import (
 )
 
 type PoolGroup struct {
-	Name  string `bson:"name" json:"name"`
-	Pools []Pool `bson:"pools" json:"pools"`
+	Id    bson.ObjectId `bson:"_id" json:"id"`
+	Name  string        `bson:"name" json:"name"`
+	Pools []Pool        `bson:"pools" json:"pools"`
 }
 
 type Pool struct {
