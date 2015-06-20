@@ -21,11 +21,11 @@ package models
 type Technology string
 
 const (
-	TAPE_FILE = Technology("File")
-	TAPE_LTO1 = Technology("LTO-1")
-	TAPE_LTO2 = Technology("LTO-2")
-	TAPE_LTO3 = Technology("LTO-3")
-	TAPE_LTO4 = Technology("LTO-4")
-	TAPE_LTO5 = Technology("LTO-5")
-	TAPE_LTO6 = Technology("LTO-6")
+	TECH_FILE = Technology("File")
+	TECH_LTO1 = Technology("LTO-1")
+	TECH_LTO2 = Technology("LTO-2")
+	TECH_LTO3 = Technology("LTO-3")
+	TECH_LTO4 = Technology("LTO-4")
+	TECH_LTO5 = Technology("LTO-5")
+	TECH_LTO6 = Technology("LTO-6")
 )

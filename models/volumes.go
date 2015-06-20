@@ -25,16 +25,23 @@ import (
 )
 
 const (
-	C_TAPES_NAME = "tapes"
+	C_VOLUMES_NAME = "volumes"
 )
 
-type Tape struct {
-	Id         bson.ObjectId `bson:"_id" json:"id"`
-	Product    bson.ObjectId `bson:"product_id" json:"productId"`
-	Pool       bson.ObjectId `bson:"pool_id" json:"poolId"`
-	Container  bson.ObjectId `bson:"container_id" json:"containerId"`
-	Serial     string        `bson:"serial" json:"serial"`
-	Label      string        `bson:"label" json:"label"`
-	LastWrite  time.Time     `bson:"last_write" json:"lastWrite"`
-	LastUpdate time.Time     `bson:"last_update" json:"lastUpdate"`
+type Volume struct {
+	Id        bson.ObjectId `bson:"_id" json:"id"`
+	ProductId bson.ObjectId `bson:"product_id" json:"productId"`
+	PoolId    bson.ObjectId `bson:"pool_id" json:"poolId"`
+	Serial    string        `bson:"serial" json:"serial"`
+	Label     string        `bson:"label" json:"label"`
+	LastWrite time.Time     `bson:"last_write" json:"lastWrite"`
+	History   []VolHistory  `bson:"history" json:"history"`
+}
+
+type VolHistory struct {
+	Id          bson.ObjectId `bson:"_id" json:"id"`
+	Date        time.Time     `bson:"date" json:"date"`
+	Status      VolStatus     `bson:"status" json:"status"`
+	ContainerId bson.ObjectId `bson:"container_id" json:"containerId"`
+	Details     string        `bson:"details" json:"details"`
 }

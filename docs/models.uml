@@ -1,0 +1,92 @@
+@startuml
+
+' vendors
+Vendor *-- Product
+Product -up- Technology
+
+' poolgroup
+PoolGroup *-- Pool
+
+' locations
+Location *-- Container
+
+' volumes
+Volume *-right- VolHistory
+Volume -up- Product
+Volume -up- Pool
+VolHistory -up- Container
+VolHistory -up- VolStatus
+
+enum Technology {
+	TECH_FILE
+	TECH_LTO1
+	TECH_LTO2
+	TECH_LTO3
+	TECH_LTO4
+	TECH_LTO5
+}
+
+enum VolStatus {
+	STATUS_ERROR
+	STATUS_FULL_RESTORED
+	STATUS_RESTORED
+	STATUS_SENT
+	STATUS_STORED
+	STATUS_TESTED
+	STATUS_VAULT
+}
+
+class Vendor {
+	Id: ObjectId
+	Name: string
+	Products: []Product
+}
+
+class Product {
+	Id: ObjectId
+	Technology: Technology
+	Name: string
+}
+
+class PoolGroup {
+	Id: ObjectId
+	Pools: []Pool
+}
+
+class Pool {
+	Id: ObjectId
+	Name: string
+	Retention: duration
+}
+
+class Location {
+	Id: ObjectId
+	Name: string
+	Containers: []Container
+}
+
+class Container {
+	Id: ObjectId
+	Name: string
+	Description: string
+}
+
+class Volume {
+	Id: ObjectId
+	ProductId: ObjectId
+	PoolId: ObjectId
+	Serial: string
+	Label: string
+	LastWrite: date
+	History: []VolHitory
+}
+
+class VolHistory {
+	Id: ObjectId
+	Date: date
+	Status: VolStatus
+	ContainerId: ObjectId
+	Details: string
+}
+
+@enduml

@@ -18,10 +18,14 @@
 
 package models
 
-type StoreStatus string
+type VolStatus string
 
 const (
-	STORE_STORED = StoreStatus("Stored")
-	STORE_SENT   = StoreStatus("Sent")
-	STORE_VAULT  = StoreStatus("Vault Stored")
+	STATUS_ERROR         = VolStatus("Error")
+	STATUS_FULL_RESTORED = VolStatus("Full Restored")
+	STATUS_RESTORED      = VolStatus("Restored")
+	STATUS_SENT          = VolStatus("Sent")
+	STATUS_STORED        = VolStatus("Stored")
+	STATUS_TESTED        = VolStatus("Tested")
+	STATUS_VAULT         = VolStatus("Vault Stored")
 )
