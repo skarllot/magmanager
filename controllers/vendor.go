@@ -29,12 +29,11 @@ import (
 )
 
 type VendorController struct {
-	dbname  string
-	session *mgo.Session
+	dbCollection *mgo.Collection
 }
 
-func NewVendorController(db string, s *mgo.Session) *VendorController {
-	return &VendorController{db, s}
+func NewVendorController(db *mgo.Database) *VendorController {
+	return &VendorController{db.C(models.C_VENDORS_NAME)}
 }
 
 func (self *VendorController) GetVendor(
@@ -50,17 +49,28 @@ func (self *VendorController) GetVendor(
 	}
 
 	v := models.Vendor{}
-	if err := self.session.
-		DB(self.dbname).
-		C(models.C_VENDORS_NAME).
-		FindId(id).
-		One(&v); err != nil {
-		jerr := rqhttp.NewJsonErrorFromError(http.StatusNotFound, err)
-		rqhttp.JsonWrite(w, jerr.Status, jerr)
+	err := self.dbCollection.FindId(id).One(&v)
+	if err != nil {
+		writeObjectIdError(w, id.Hex(), err)
 		return
 	}
 
 	rqhttp.JsonWrite(w, http.StatusOK, v)
+}
+
+func (self *VendorController) GetVendorList(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	list := make([]models.Vendor, 0)
+	err := self.dbCollection.Find(nil).All(&list)
+	if err != nil {
+		jerr := rqhttp.NewJsonErrorFromError(http.StatusInternalServerError, err)
+		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		return
+	}
+
+	rqhttp.JsonWrite(w, http.StatusOK, list)
 }
 
 func (self *VendorController) CreateVendor(
@@ -73,10 +83,8 @@ func (self *VendorController) CreateVendor(
 	}
 	v.Id = bson.NewObjectId()
 
-	if err := self.session.
-		DB(self.dbname).
-		C(models.C_VENDORS_NAME).
-		Insert(v); err != nil {
+	err := self.dbCollection.Insert(v)
+	if err != nil {
 		jerr := rqhttp.NewJsonErrorFromError(
 			http.StatusInternalServerError, err)
 		rqhttp.JsonWrite(w, jerr.Status, jerr)
@@ -101,16 +109,39 @@ func (self *VendorController) RemoveVendor(
 		return
 	}
 
-	if err := self.session.
-		DB(self.dbname).
-		C(models.C_VENDORS_NAME).
-		RemoveId(id); err != nil {
-		jerr := rqhttp.NewJsonErrorFromError(http.StatusNotFound, err)
+	err := self.dbCollection.RemoveId(id)
+	if err != nil {
+		writeObjectIdError(w, id.Hex(), err)
+		return
+	}
+
+	rqhttp.JsonWrite(w, http.StatusNoContent, nil)
+}
+
+func (self *VendorController) UpdateVendor(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	var id bson.ObjectId
+	if !readObjectId(r, "id", &id) {
+		jerr := rqhttp.NewJsonErrorFromError(
+			http.StatusGone, InvalidObjectId("vendor"))
 		rqhttp.JsonWrite(w, jerr.Status, jerr)
 		return
 	}
 
-	rqhttp.JsonWrite(w, http.StatusOK, nil)
+	v := models.Vendor{}
+	if !rqhttp.JsonRead(r.Body, &v, w) {
+		return
+	}
+
+	err := self.dbCollection.UpdateId(v.Id, &v)
+	if err != nil {
+		writeObjectIdError(w, id.Hex(), err)
+		return
+	}
+
+	rqhttp.JsonWrite(w, http.StatusOK, v)
 }
 
 func (self *VendorController) Routes() rqhttp.Routes {
@@ -121,6 +152,13 @@ func (self *VendorController) Routes() rqhttp.Routes {
 			"/vendor/{id}",
 			false,
 			self.GetVendor,
+		},
+		rqhttp.Route{
+			"GetVendorList",
+			"GET",
+			"/vendor",
+			false,
+			self.GetVendorList,
 		},
 		rqhttp.Route{
 			"CreateVendor",
@@ -139,4 +177,5 @@ func (self *VendorController) Routes() rqhttp.Routes {
 	}
 }
 
+// Ensure that VendorController implements Routable interface.
 var _ rqhttp.Routable = (*VendorController)(nil)

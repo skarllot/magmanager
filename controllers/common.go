@@ -23,6 +23,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	rqhttp "github.com/skarllot/raiqub/http"
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -36,8 +38,28 @@ func readObjectId(r *http.Request, key string, id *bson.ObjectId) bool {
 	return true
 }
 
+// writeObjectIdError returns a not found object ID error when aplicable;
+// otherwise returns a internal server error.
+func writeObjectIdError(w http.ResponseWriter, id string, err error) {
+	var jerr rqhttp.JsonError
+	if err == mgo.ErrNotFound {
+		jerr = rqhttp.NewJsonErrorFromError(
+			http.StatusNotFound, NotFoundObjectId(id))
+	} else {
+		jerr = rqhttp.NewJsonErrorFromError(
+			http.StatusInternalServerError, err)
+	}
+	rqhttp.JsonWrite(w, jerr.Status, jerr)
+}
+
 type InvalidObjectId string
 
 func (e InvalidObjectId) Error() string {
 	return fmt.Sprintf("Invalid object ID for '%s'", string(e))
+}
+
+type NotFoundObjectId string
+
+func (e NotFoundObjectId) Error() string {
+	return fmt.Sprintf("The object ID '%s' was not found", string(e))
 }
