@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/skarllot/magmanager/models"
 	rqhttp "github.com/skarllot/raiqub/http"
 	"gopkg.in/mgo.v2"
@@ -42,20 +41,22 @@ func (self *VendorController) GetVendor(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	id := mux.Vars(r)["id"]
-	if !bson.IsObjectIdHex(id) {
-		rqhttp.JsonWrite(w, http.StatusNotFound, "")
+	var id bson.ObjectId
+	if !readObjectId(r, "id", &id) {
+		jerr := rqhttp.NewJsonErrorFromError(
+			http.StatusGone, InvalidObjectId("vendor"))
+		rqhttp.JsonWrite(w, jerr.Status, jerr)
 		return
 	}
 
-	oid := bson.ObjectIdHex(id)
 	v := models.Vendor{}
 	if err := self.session.
 		DB(self.dbname).
 		C(models.C_VENDORS_NAME).
-		FindId(oid).
+		FindId(id).
 		One(&v); err != nil {
-		rqhttp.JsonWrite(w, http.StatusNotFound, "")
+		jerr := rqhttp.NewJsonErrorFromError(http.StatusNotFound, err)
+		rqhttp.JsonWrite(w, jerr.Status, jerr)
 		return
 	}
 
@@ -72,10 +73,15 @@ func (self *VendorController) CreateVendor(
 	}
 	v.Id = bson.NewObjectId()
 
-	self.session.
+	if err := self.session.
 		DB(self.dbname).
 		C(models.C_VENDORS_NAME).
-		Insert(v)
+		Insert(v); err != nil {
+		jerr := rqhttp.NewJsonErrorFromError(
+			http.StatusInternalServerError, err)
+		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		return
+	}
 
 	rqhttp.HttpHeader_Location().
 		SetValue(fmt.Sprintf("/vendor/%s", v.Id.Hex())).
@@ -87,22 +93,24 @@ func (self *VendorController) RemoveVendor(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	id := mux.Vars(r)["id"]
-	if !bson.IsObjectIdHex(id) {
-		rqhttp.JsonWrite(w, http.StatusNotFound, "")
+	var id bson.ObjectId
+	if !readObjectId(r, "id", &id) {
+		jerr := rqhttp.NewJsonErrorFromError(
+			http.StatusGone, InvalidObjectId("vendor"))
+		rqhttp.JsonWrite(w, jerr.Status, jerr)
 		return
 	}
 
-	oid := bson.ObjectIdHex(id)
 	if err := self.session.
 		DB(self.dbname).
 		C(models.C_VENDORS_NAME).
-		RemoveId(oid); err != nil {
-		rqhttp.JsonWrite(w, http.StatusNotFound, "")
+		RemoveId(id); err != nil {
+		jerr := rqhttp.NewJsonErrorFromError(http.StatusNotFound, err)
+		rqhttp.JsonWrite(w, jerr.Status, jerr)
 		return
 	}
 
-	rqhttp.JsonWrite(w, http.StatusOK, "")
+	rqhttp.JsonWrite(w, http.StatusOK, nil)
 }
 
 func (self *VendorController) Routes() rqhttp.Routes {
@@ -130,3 +138,5 @@ func (self *VendorController) Routes() rqhttp.Routes {
 		},
 	}
 }
+
+var _ rqhttp.Routable = (*VendorController)(nil)
