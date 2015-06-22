@@ -41,14 +41,16 @@ var (
 )
 
 func TestCreateEnvironment(t *testing.T) {
-	mgoImg := docker.NewImageMongoDB()
+	mgoImg := docker.NewImageMongoDB(docker.NewDocker())
 	if err := mgoImg.Setup(); err != nil {
 		t.Error("Error setting up Docker:", err)
 		return
 	}
 
 	var err error
-	container, err = mgoImg.Run("mongodbgolangtest")
+	cfg := docker.NewRunConfig()
+	cfg.Detach()
+	container, err = mgoImg.RunLight(cfg)
 	if err != nil {
 		t.Error("Error starting MongoDB instance:", err)
 		return
@@ -142,6 +144,10 @@ func TestCRUD(t *testing.T) {
 }
 
 func TestDestroyEnvironment(t *testing.T) {
+	if !environmentRunning {
+		return
+	}
+	
 	environmentRunning = false
 	container.Kill()
 	container.Remove()
