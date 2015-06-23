@@ -19,9 +19,7 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -29,6 +27,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/skarllot/magmanager/controllers"
 	rqhttp "github.com/skarllot/raiqub/http"
+	"gopkg.in/mgo.v2"
 )
 
 const (
@@ -36,25 +35,35 @@ const (
 )
 
 func main() {
-	content, err := ioutil.ReadFile(CONFIG_FILE_NAME)
+	logger := log.New(os.Stderr, "magmanager", log.LstdFlags|log.Lshortfile)
+	file, err := os.Open(CONFIG_FILE_NAME)
 	if err != nil {
-		log.Fatalf("ReadConfigFile: %s\n", err)
+		logger.Fatalf("OpenConfigFile: %s\n", err)
 		os.Exit(1)
 	}
 
-	cfg := Config{}
-	if err := json.Unmarshal(content, &cfg); err != nil {
-		log.Fatalf("UnmarshalConfigFile: %s\n", err)
+	cfg, err := ParseConfig(file)
+	file.Close()
+	if err != nil {
+		logger.Fatalf("ParseConfig: %s\n", err)
 		os.Exit(1)
 	}
 
-	session, err := getSession(cfg.Database)
+	session, err := getSession(cfg.Database, logger)
 	if err != nil {
-		log.Fatalf("CreateDbSession: %s\n", err)
+		logger.Fatalf("CreateDbSession: %s\n", err)
 		os.Exit(1)
 	}
 	defer session.Close()
 
+	router := createMux(cfg, session)
+	fmt.Println("HTTP server listening on port", cfg.HttpServer.Port)
+	http.ListenAndServe(
+		fmt.Sprintf("%s:%d", cfg.HttpServer.Address, cfg.HttpServer.Port),
+		router)
+}
+
+func createMux(cfg *Config, session *mgo.Session) http.Handler {
 	router := mux.NewRouter()
 	routes := rqhttp.MergeRoutes(
 		controllers.NewVendorController(session.DB(cfg.Database.Database)),
@@ -67,9 +76,6 @@ func main() {
 			Name(r.Name).
 			Handler(r.ActionFunc)
 	}
-
-	fmt.Println("HTTP server listening on port", cfg.HttpServer.Port)
-	http.ListenAndServe(
-		fmt.Sprintf("%s:%d", cfg.HttpServer.Address, cfg.HttpServer.Port),
-		router)
+	
+	return router
 }

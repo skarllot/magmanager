@@ -25,7 +25,13 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
-func getSession(cfg Database) (*mgo.Session, error) {
+var vendorsCollection []models.Vendor
+
+func init() {
+	models.PreInitVendors()
+}
+
+func getSession(cfg Database, logger *log.Logger) (*mgo.Session, error) {
 	dialInfo := &mgo.DialInfo{
 		Addrs:    cfg.Addrs,
 		Timeout:  cfg.Timeout,
@@ -45,10 +51,9 @@ func getSession(cfg Database) (*mgo.Session, error) {
 		return nil, err
 	}
 	if indexOfInStringSlice(cols, models.C_VENDORS_NAME) == -1 {
-		log.Println("The collection 'vendors' was not found")
-		vendors := models.PreInitVendors()
+		logger.Println("The collection 'vendors' was not found")
 
-		for _, v := range vendors {
+		for _, v := range vendorsCollection {
 			err = session.
 				DB(cfg.Database).
 				C(models.C_VENDORS_NAME).

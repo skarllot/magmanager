@@ -19,6 +19,9 @@
 package main
 
 import (
+	"encoding/json"
+	"io"
+	"io/ioutil"
 	"time"
 )
 
@@ -41,3 +44,17 @@ type (
 		Password string        `json:"password"`
 	}
 )
+
+func ParseConfig(r io.Reader) (*Config, error) {
+	content, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := &Config{}
+	if err := json.Unmarshal(content, cfg); err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
