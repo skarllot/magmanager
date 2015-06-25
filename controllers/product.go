@@ -29,12 +29,11 @@ import (
 )
 
 type ProductController struct {
-	dbname  string
-	session *mgo.Session
+	dbCollection *mgo.Collection
 }
 
-func NewProductController(db string, s *mgo.Session) *ProductController {
-	return &ProductController{db, s}
+func NewProductController(db *mgo.Database) *ProductController {
+	return &ProductController{db.C(models.C_VENDORS_NAME)}
 }
 
 func (self *ProductController) GetProduct(
@@ -57,12 +56,7 @@ func (self *ProductController) GetProduct(
 
 	v := models.Vendor{}
 	sel := bson.M{"products": bson.M{"$elemMatch": bson.M{"_id": pid}}}
-	err := self.session.
-		DB(self.dbname).
-		C(models.C_VENDORS_NAME).
-		Find(bson.M{"_id": vid}).
-		Select(sel).
-		One(&v)
+	err := self.dbCollection.Find(bson.M{"_id": vid}).Select(sel).One(&v)
 	if err != nil {
 		writeObjectIdError(w,
 			fmt.Sprintf("%s/%s", vid.Hex(), pid.Hex()), err)
@@ -96,9 +90,7 @@ func (self *ProductController) CreateProduct(
 	}
 	p.Id = bson.NewObjectId()
 
-	err := self.session.
-		DB(self.dbname).
-		C(models.C_VENDORS_NAME).
+	err := self.dbCollection.
 		UpdateId(vid, bson.M{"$push": bson.M{"products": p}})
 	if err != nil {
 		writeObjectIdError(w, vid.Hex(), err)
@@ -109,6 +101,33 @@ func (self *ProductController) CreateProduct(
 		SetValue(fmt.Sprintf("/vendor/%s/product/%s", vid.Hex(), p.Id.Hex())).
 		SetWriter(w.Header())
 	rqhttp.JsonWrite(w, http.StatusCreated, p)
+}
+
+func (self *ProductController) UpdateProduct(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	var vid, pid bson.ObjectId
+	if !readObjectId(r, "vid", &vid) {
+		jerr := rqhttp.NewJsonErrorFromError(
+			http.StatusGone, InvalidObjectId("vendor"))
+		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		return
+	}
+	if !readObjectId(r, "pid", &pid) {
+		jerr := rqhttp.NewJsonErrorFromError(
+			http.StatusGone, InvalidObjectId("product"))
+		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		return
+	}
+
+	p := models.Product{}
+	if !rqhttp.JsonRead(r.Body, &p, w) {
+		return
+	}
+
+	p.Id = bson.ObjectId("")
+	//err := self.dbCollection
 }
 
 func (self *ProductController) RemoveProduct(
@@ -129,9 +148,7 @@ func (self *ProductController) RemoveProduct(
 		return
 	}
 
-	err := self.session.
-		DB(self.dbname).
-		C(models.C_VENDORS_NAME).
+	err := self.dbCollection.
 		UpdateId(vid, bson.M{"$pull": bson.M{"products": bson.M{"_id": pid}}})
 	if err != nil {
 		writeObjectIdError(w, vid.Hex(), err)
@@ -163,6 +180,13 @@ func (self *ProductController) Routes() rqhttp.Routes {
 			"/vendor/{vid}/product/{pid}",
 			false,
 			self.RemoveProduct,
+		},
+		rqhttp.Route{
+			"UpdateProduct",
+			"PUT",
+			"/vendor/{vid}/product/{pid}",
+			false,
+			self.UpdateProduct,
 		},
 	}
 }
