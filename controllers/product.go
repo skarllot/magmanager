@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/skarllot/magmanager/models"
 	rqhttp "github.com/skarllot/raiqub/http"
 	"gopkg.in/mgo.v2"
@@ -38,60 +37,42 @@ func NewProductController(db string, s *mgo.Session) *ProductController {
 	return &ProductController{db, s}
 }
 
-func (self *ProductController) getVendorId(
-	w http.ResponseWriter,
-	r *http.Request,
-	id *bson.ObjectId,
-) bool {
-	vid := mux.Vars(r)["vid"]
-	if !bson.IsObjectIdHex(vid) {
-		rqhttp.JsonWrite(w, http.StatusNotFound, "Invalid vendor ID")
-		return false
-	}
-
-	*id = bson.ObjectIdHex(vid)
-	return true
-}
-
-func (self *ProductController) getProductId(
-	w http.ResponseWriter,
-	r *http.Request,
-	id *bson.ObjectId,
-) bool {
-	pid := mux.Vars(r)["pid"]
-	if !bson.IsObjectIdHex(pid) {
-		rqhttp.JsonWrite(w, http.StatusNotFound, "Invalid product ID")
-		return false
-	}
-
-	*id = bson.ObjectIdHex(pid)
-	return true
-}
-
 func (self *ProductController) GetProduct(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
 	var vid, pid bson.ObjectId
-	if !self.getVendorId(w, r, &vid) ||
-		!self.getProductId(w, r, &pid) {
+	if !readObjectId(r, "vid", &vid) {
+		jerr := rqhttp.NewJsonErrorFromError(
+			http.StatusGone, InvalidObjectId("vendor"))
+		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		return
+	}
+	if !readObjectId(r, "pid", &pid) {
+		jerr := rqhttp.NewJsonErrorFromError(
+			http.StatusGone, InvalidObjectId("product"))
+		rqhttp.JsonWrite(w, jerr.Status, jerr)
 		return
 	}
 
 	v := models.Vendor{}
 	sel := bson.M{"products": bson.M{"$elemMatch": bson.M{"_id": pid}}}
-	if err := self.session.
+	err := self.session.
 		DB(self.dbname).
 		C(models.C_VENDORS_NAME).
 		Find(bson.M{"_id": vid}).
 		Select(sel).
-		One(&v); err != nil {
-		rqhttp.JsonWrite(w, http.StatusNotFound, "Product ID not found")
+		One(&v)
+	if err != nil {
+		writeObjectIdError(w,
+			fmt.Sprintf("%s/%s", vid.Hex(), pid.Hex()), err)
 		return
 	}
 	if len(v.Products) != 1 {
-		rqhttp.JsonWrite(w, http.StatusNotFound,
-			"More than one product was found")
+		jerr := rqhttp.NewJsonErrorFromError(
+			http.StatusNotFound, fmt.Errorf("More than one product was found"))
+		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		return
 	}
 
 	rqhttp.JsonWrite(w, http.StatusOK, v.Products[0])
@@ -102,7 +83,10 @@ func (self *ProductController) CreateProduct(
 	r *http.Request,
 ) {
 	var vid bson.ObjectId
-	if !self.getVendorId(w, r, &vid) {
+	if !readObjectId(r, "vid", &vid) {
+		jerr := rqhttp.NewJsonErrorFromError(
+			http.StatusGone, InvalidObjectId("vendor"))
+		rqhttp.JsonWrite(w, jerr.Status, jerr)
 		return
 	}
 
@@ -117,7 +101,7 @@ func (self *ProductController) CreateProduct(
 		C(models.C_VENDORS_NAME).
 		UpdateId(vid, bson.M{"$push": bson.M{"products": p}})
 	if err != nil {
-		rqhttp.JsonWrite(w, http.StatusInternalServerError, err.Error())
+		writeObjectIdError(w, vid.Hex(), err)
 		return
 	}
 
@@ -132,8 +116,16 @@ func (self *ProductController) RemoveProduct(
 	r *http.Request,
 ) {
 	var vid, pid bson.ObjectId
-	if !self.getVendorId(w, r, &vid) ||
-		!self.getProductId(w, r, &pid) {
+	if !readObjectId(r, "vid", &vid) {
+		jerr := rqhttp.NewJsonErrorFromError(
+			http.StatusGone, InvalidObjectId("vendor"))
+		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		return
+	}
+	if !readObjectId(r, "pid", &pid) {
+		jerr := rqhttp.NewJsonErrorFromError(
+			http.StatusGone, InvalidObjectId("product"))
+		rqhttp.JsonWrite(w, jerr.Status, jerr)
 		return
 	}
 
@@ -142,11 +134,11 @@ func (self *ProductController) RemoveProduct(
 		C(models.C_VENDORS_NAME).
 		UpdateId(vid, bson.M{"$pull": bson.M{"products": bson.M{"_id": pid}}})
 	if err != nil {
-		rqhttp.JsonWrite(w, http.StatusNotFound, "")
+		writeObjectIdError(w, vid.Hex(), err)
 		return
 	}
 
-	rqhttp.JsonWrite(w, http.StatusOK, "")
+	rqhttp.JsonWrite(w, http.StatusNoContent, nil)
 }
 
 func (self *ProductController) Routes() rqhttp.Routes {
