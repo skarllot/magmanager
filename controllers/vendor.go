@@ -135,24 +135,18 @@ func (self *VendorController) UpdateVendor(
 		return
 	}
 
-	err := self.dbCollection.UpdateId(v.Id, &v)
+	v.Id = bson.ObjectId("")
+	err := self.dbCollection.UpdateId(id, v)
 	if err != nil {
 		writeObjectIdError(w, id.Hex(), err)
 		return
 	}
 
-	rqhttp.JsonWrite(w, http.StatusOK, v)
+	rqhttp.JsonWrite(w, http.StatusNoContent, nil)
 }
 
 func (self *VendorController) Routes() rqhttp.Routes {
 	return rqhttp.Routes{
-		rqhttp.Route{
-			"GetVendor",
-			"GET",
-			"/vendor/{id}",
-			false,
-			self.GetVendor,
-		},
 		rqhttp.Route{
 			"GetVendorList",
 			"GET",
@@ -161,11 +155,25 @@ func (self *VendorController) Routes() rqhttp.Routes {
 			self.GetVendorList,
 		},
 		rqhttp.Route{
+			"GetVendor",
+			"GET",
+			"/vendor/{id}",
+			false,
+			self.GetVendor,
+		},
+		rqhttp.Route{
 			"CreateVendor",
 			"POST",
 			"/vendor",
 			false,
 			self.CreateVendor,
+		},
+		rqhttp.Route{
+			"UpdateVendor",
+			"PUT",
+			"/vendor/{id}",
+			false,
+			self.UpdateVendor,
 		},
 		rqhttp.Route{
 			"RemoveVendor",

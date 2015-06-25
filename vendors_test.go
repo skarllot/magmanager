@@ -20,7 +20,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -36,6 +35,21 @@ import (
 
 const (
 	CONFIG_SAMPLE_FILE = "config.sample.json"
+)
+
+var (
+	testSample = []models.Vendor{
+		models.Vendor{
+			bson.ObjectId(""),
+			"Vendor001",
+			[]models.Product{},
+		},
+		models.Vendor{
+			bson.ObjectId(""),
+			"Vendor002",
+			[]models.Product{},
+		},
+	}
 )
 
 func TestVendorsBasic(t *testing.T) {
@@ -82,12 +96,15 @@ func TestVendorsBasic(t *testing.T) {
 	ts := httptest.NewServer(router)
 	defer ts.Close()
 
+	client := NewHttpClient(t)
+
 	// =========================================================================
 	// Test GetVendorList
 	// =========================================================================
+	t.Log("Testing GetVendorList")
 	url := fmt.Sprintf("%s/vendor", ts.URL)
 	var dbVendors []models.Vendor
-	httpGet(url, http.StatusOK, &dbVendors, t)
+	client.Get(url, http.StatusOK, &dbVendors)
 
 	if len(reference) != len(dbVendors) {
 		t.Fatal("Length of vendor list do not match")
@@ -103,10 +120,11 @@ func TestVendorsBasic(t *testing.T) {
 	// =========================================================================
 	// Test GetVendor
 	// =========================================================================
+	t.Log("Testing GetVendor")
 	for i, _ := range reference {
 		url := fmt.Sprintf("%s/vendor/%s", ts.URL, reference[i].Id.Hex())
 		var dbVendor models.Vendor
-		httpGet(url, http.StatusOK, &dbVendor, t)
+		client.Get(url, http.StatusOK, &dbVendor)
 
 		if err := compareVendor(&reference[i], &dbVendor); err != nil {
 			t.Errorf("Vendor do not match: %s\n", err)
@@ -115,31 +133,61 @@ func TestVendorsBasic(t *testing.T) {
 
 	url = fmt.Sprintf("%s/vendor/%s", ts.URL, bson.NewObjectId().Hex())
 	var jerr rqhttp.JsonError
-	httpGet(url, http.StatusNotFound, &jerr, t)
+	client.Get(url, http.StatusNotFound, &jerr)
 	if jerr.Status != http.StatusNotFound {
 		t.Fatalf("Invalid JsonError object: %#v", jerr)
 	}
 	// =========================================================================
-}
 
-func httpGet(url string, code int, v interface{}, t *testing.T) {
-	res, err := http.Get(url)
-	if err != nil {
-		t.Fatal(err.Error())
-	}
+	// =========================================================================
+	// Test CreateVendor
+	// =========================================================================
+	t.Log("Testing CreateVendor")
+	for i, _ := range testSample {
+		url := fmt.Sprintf("%s/vendor", ts.URL)
+		var dbVendor models.Vendor
+		client.Post(url, http.StatusCreated, &testSample[i], &dbVendor)
 
-	if res.StatusCode != code {
-		t.Fatalf("Unexpected HTTP status. Expected '%d' got '%d'.",
-			code, res.StatusCode)
+		if err := compareVendor(&testSample[i], &dbVendor); err != nil {
+			t.Errorf("Vendor do not match: %v\n", err)
+		}
+		testSample[i].Id = dbVendor.Id
 	}
+	// =========================================================================
 
-	if err := json.NewDecoder(res.Body).Decode(v); err != nil {
-		t.Fatalf("Could not parse server response: %s\n", err)
+	// =========================================================================
+	// Test UpdateVendor
+	// =========================================================================
+	t.Log("Testing UpdateVendor")
+	for _, v := range testSample {
+		url := fmt.Sprintf("%s/vendor/%s", ts.URL, v.Id.Hex())
+		v.Name = v.Id.Hex() + v.Name
+		v.Products = []models.Product{models.Product{}, models.Product{}}
+		client.Put(url, http.StatusNoContent, &v)
+
+		var dbVendor models.Vendor
+		client.Get(url, http.StatusOK, &dbVendor)
+		if err := compareVendor(&v, &dbVendor); err != nil {
+			t.Errorf("Vendor was not updated: %v\n", err)
+		}
 	}
+	// =========================================================================
+
+	// =========================================================================
+	// Test RemoveVendor
+	// =========================================================================
+	t.Log("Testing RemoveVendor")
+	for _, v := range testSample {
+		url := fmt.Sprintf("%s/vendor/%s", ts.URL, v.Id.Hex())
+		client.Delete(url, http.StatusNoContent)
+
+		client.Get(url, http.StatusNotFound, nil)
+	}
+	// =========================================================================
 }
 
 func compareVendor(v1 *models.Vendor, v2 *models.Vendor) error {
-	if v1.Id != v2.Id {
+	if string(v1.Id) != "" && v1.Id != v2.Id {
 		return fmt.Errorf(
 			"Vendor ID do not match. Found '%s' instead of '%s'",
 			v2.Id.Hex(), v1.Id.Hex())

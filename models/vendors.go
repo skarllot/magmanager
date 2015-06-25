@@ -27,13 +27,13 @@ const (
 )
 
 type Vendor struct {
-	Id       bson.ObjectId `bson:"_id" json:"id"`
+	Id       bson.ObjectId `bson:"_id,omitempty" json:"id,omitempty"`
 	Name     string        `bson:"name" json:"name"`
 	Products []Product     `bson:"products" json:"products"`
 }
 
 type Product struct {
-	Id         bson.ObjectId `bson:"_id" json:"id"`
+	Id         bson.ObjectId `bson:"_id,omitempty" json:"id,omitempty"`
 	Technology Technology    `bson:"technology" json:"technology"`
 	Name       string        `bson:"name" json:"name"`
 }

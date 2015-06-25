@@ -18,6 +18,10 @@
 
 package main
 
+import (
+	"io"
+)
+
 func indexOfInStringSlice(col []string, val string) int {
 	for idx, item := range col {
 		if item == val {
@@ -26,4 +30,12 @@ func indexOfInStringSlice(col []string, val string) int {
 	}
 	
 	return -1
+}
+
+type NullCloser struct {
+	io.Reader
+}
+
+func (NullCloser) Close() error {
+	return nil
 }
