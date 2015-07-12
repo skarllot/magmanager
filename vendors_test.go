@@ -19,7 +19,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"net/http"
@@ -53,8 +52,7 @@ var (
 )
 
 func TestVendorsBasic(t *testing.T) {
-	var buf bytes.Buffer
-	logger := log.New(&buf, "", log.LstdFlags)
+	logger := log.New(NullWriter{}, "", log.LstdFlags)
 	file, err := os.Open(CONFIG_FILE_NAME)
 	if err != nil {
 		t.Fatalf("Error opening configuration file: %s\n", err)

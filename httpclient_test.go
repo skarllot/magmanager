@@ -19,8 +19,8 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"testing"
 
@@ -62,6 +62,7 @@ func (s *HttpClient) Get(url string, code int, output interface{}) {
 
 func (s *HttpClient) Post(url string, code int, input, output interface{}) {
 	buf := s.parseInput(input)
+	defer buf.Close()
 
 	res, err := s.client.Post(
 		url, rqhttp.HttpHeader_ContentType_Json().Value, buf)
@@ -75,7 +76,7 @@ func (s *HttpClient) Post(url string, code int, input, output interface{}) {
 func (s *HttpClient) Put(url string, code int, input interface{}) {
 	req, _ := http.NewRequest("PUT", url, nil)
 	rqhttp.HttpHeader_ContentType_Json().SetWriter(req.Header)
-	req.Body = &NullCloser{s.parseInput(input)}
+	req.Body = s.parseInput(input)
 
 	res, err := s.client.Do(req)
 	if err != nil {
@@ -85,20 +86,23 @@ func (s *HttpClient) Put(url string, code int, input interface{}) {
 	s.parseOutput(res, code, nil)
 }
 
-func (s *HttpClient) parseInput(input interface{}) *bytes.Buffer {
-	var buf bytes.Buffer
-	if err := json.NewEncoder(&buf).Encode(input); err != nil {
-		s.t.Fatalf("Could not encode content: %v\n", err)
-	}
+func (s *HttpClient) parseInput(input interface{}) io.ReadCloser {
+	pr, pw := io.Pipe()
+	go func() {
+		if err := json.NewEncoder(pw).Encode(input); err != nil {
+			s.t.Fatalf("Could not encode content: %v\n", err)
+		}
+		pw.Close()
+	}()
 
-	return &buf
+	return pr
 }
 
 func (s *HttpClient) parseOutput(
 	res *http.Response, code int, output interface{},
 ) {
 	defer res.Body.Close()
-	
+
 	if res.StatusCode != code {
 		var jerr rqhttp.JsonError
 		json.NewDecoder(res.Body).Decode(&jerr)

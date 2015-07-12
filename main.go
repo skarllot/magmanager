@@ -67,7 +67,7 @@ func createMux(cfg *Config, session *mgo.Session) http.Handler {
 	router := mux.NewRouter()
 	routes := rqhttp.MergeRoutes(
 		controllers.NewVendorController(session.DB(cfg.Database.Database)),
-		controllers.NewProductController(cfg.Database.Database, session),
+		controllers.NewProductController(session.DB(cfg.Database.Database)),
 	)
 	for _, r := range routes {
 		router.
@@ -76,6 +76,6 @@ func createMux(cfg *Config, session *mgo.Session) http.Handler {
 			Name(r.Name).
 			Handler(r.ActionFunc)
 	}
-	
+
 	return router
 }

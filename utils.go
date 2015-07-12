@@ -28,7 +28,7 @@ func indexOfInStringSlice(col []string, val string) int {
 			return idx
 		}
 	}
-	
+
 	return -1
 }
 
@@ -38,4 +38,10 @@ type NullCloser struct {
 
 func (NullCloser) Close() error {
 	return nil
+}
+
+type NullWriter struct{}
+
+func (NullWriter) Write(p []byte) (int, error) {
+	return len(p), nil
 }
