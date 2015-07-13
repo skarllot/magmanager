@@ -32,7 +32,7 @@ rootHtml = `
       <head>
         <meta charset="utf-8">
         <title>MagManager API</title>
-        <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.4.2/pure-min.css">
+        <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css">
       </head>
       <body style="margin: 20px;">
         <h2>Endpoints</h2>
