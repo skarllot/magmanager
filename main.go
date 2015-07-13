@@ -18,6 +18,12 @@
 
 package main
 
+// Environment variables:
+// PORT		Defines listening port for HTTP server
+// MONGODB	Defines MongoDB database address
+//			(eg: mongodb://user:password@db.example.com:55699/magmanager)
+//
+
 import (
 	"fmt"
 	"log"
@@ -30,44 +36,31 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
-const (
-	CONFIG_FILE_NAME = "config.json"
+var (
+	logger *log.Logger
 )
 
+func init() {
+	logger = log.New(os.Stderr, "magmanager", log.LstdFlags|log.Lshortfile)
+}
+
 func main() {
-	logger := log.New(os.Stderr, "magmanager", log.LstdFlags|log.Lshortfile)
-	file, err := os.Open(CONFIG_FILE_NAME)
-	if err != nil {
-		logger.Fatalf("OpenConfigFile: %s\n", err)
-		os.Exit(1)
-	}
-
-	cfg, err := ParseConfig(file)
-	file.Close()
-	if err != nil {
-		logger.Fatalf("ParseConfig: %s\n", err)
-		os.Exit(1)
-	}
-
-	session, err := getSession(cfg.Database, logger)
+	session, err := getSession()
 	if err != nil {
 		logger.Fatalf("CreateDbSession: %s\n", err)
-		os.Exit(1)
 	}
 	defer session.Close()
 
-	router := createMux(cfg, session)
-	fmt.Println("HTTP server listening on port", cfg.HttpServer.Port)
-	http.ListenAndServe(
-		fmt.Sprintf("%s:%d", cfg.HttpServer.Address, cfg.HttpServer.Port),
-		router)
+	router := createMux(session)
+	fmt.Println("HTTP server listening on", EnvPort())
+	http.ListenAndServe(EnvPort(), router)
 }
 
-func createMux(cfg *Config, session *mgo.Session) http.Handler {
+func createMux(session *mgo.Session) http.Handler {
 	router := mux.NewRouter()
 	routes := rqhttp.MergeRoutes(
-		controllers.NewVendorController(session.DB(cfg.Database.Database)),
-		controllers.NewProductController(cfg.Database.Database, session),
+		controllers.NewVendorController(session.DB("")),
+		controllers.NewProductController(session.DB("")),
 	)
 	for _, r := range routes {
 		router.
@@ -76,6 +69,12 @@ func createMux(cfg *Config, session *mgo.Session) http.Handler {
 			Name(r.Name).
 			Handler(r.ActionFunc)
 	}
-	
+
+	router.
+		Methods("GET").
+		Path("/").
+		Name("RootPage").
+		HandlerFunc(ApiRoutes(routes).RootHandler)
+
 	return router
 }

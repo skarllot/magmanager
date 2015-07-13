@@ -19,42 +19,23 @@
 package main
 
 import (
-	"encoding/json"
-	"io"
-	"io/ioutil"
-	"time"
+	"os"
 )
 
-type (
-	Config struct {
-		HttpServer HttpServer `json:"httpServer"`
-		Database   Database   `json:"database"`
+func EnvPort() string {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
 	}
 
-	HttpServer struct {
-		Address string `json:"address"`
-		Port    uint16 `json:"port"`
-	}
+	return ":" + port
+}
 
-	Database struct {
-		Addrs    []string      `json:"addrs"`
-		Timeout  time.Duration `json:timeout""`
-		Database string        `json:"database"`
-		Username string        `json:"username"`
-		Password string        `json:"password"`
+func EnvMongoDB() string {
+	mongo := os.Getenv("MONGODB")
+	if mongo == "" {
+		logger.Fatal("No connection string provided")
 	}
-)
-
-func ParseConfig(r io.Reader) (*Config, error) {
-	content, err := ioutil.ReadAll(r)
-	if err != nil {
-		return nil, err
-	}
-
-	cfg := &Config{}
-	if err := json.Unmarshal(content, cfg); err != nil {
-		return nil, err
-	}
-
-	return cfg, nil
+	
+	return mongo
 }

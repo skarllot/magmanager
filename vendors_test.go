@@ -54,17 +54,7 @@ var (
 
 func TestVendorsBasic(t *testing.T) {
 	var buf bytes.Buffer
-	logger := log.New(&buf, "", log.LstdFlags)
-	file, err := os.Open(CONFIG_FILE_NAME)
-	if err != nil {
-		t.Fatalf("Error opening configuration file: %s\n", err)
-	}
-	defer file.Close()
-
-	cfg, err := ParseConfig(file)
-	if err != nil {
-		t.Fatalf("Error parsing configuration file: %s\n", err)
-	}
+	logger = log.New(&buf, "", log.LstdFlags)
 
 	mongo := test.NewMongoDBEnvironment(t)
 	if !mongo.Applicability() {
@@ -81,10 +71,9 @@ func TestVendorsBasic(t *testing.T) {
 		t.Fatalf("Error getting MongoDB IP address: %s\n", err)
 	}
 
-	cfg.Database.Addrs = []string{net[0].FormatDialAddress()}
-	cfg.Database.Username = ""
-	cfg.Database.Password = ""
-	session, err := getSession(cfg.Database, logger)
+	os.Setenv("MONGODB",
+		fmt.Sprintf("mongodb://%s:%d/magmanager", net[0].IpAddress, net[0].Port))
+	session, err := getSession()
 	if err != nil {
 		t.Fatalf("Error opening a MongoDB session: %s\n", err)
 	}
@@ -92,7 +81,7 @@ func TestVendorsBasic(t *testing.T) {
 
 	reference := vendorsCollection[:]
 
-	router := createMux(cfg, session)
+	router := createMux(session)
 	ts := httptest.NewServer(router)
 	defer ts.Close()
 

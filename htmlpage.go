@@ -19,41 +19,38 @@
 package main
 
 import (
-	"github.com/skarllot/magmanager/models"
-	"gopkg.in/mgo.v2"
+	"html/template"
+	"fmt"
+	"net/http"
+	rqhttp "github.com/skarllot/raiqub/http"
 )
 
-var vendorsCollection []models.Vendor
+const (
+rootHtml = `
+  <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>MagManager API</title>
+        <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.4.2/pure-min.css">
+      </head>
+      <body style="margin: 20px;">
+        <h2>Endpoints</h2>
+        {{.}}
+      </body>
+    </html>
+`
+	endpointLine = `<p>[%s] %s</p>`
+)
 
-func init() {
-	vendorsCollection = models.PreInitVendors()
-}
+type ApiRoutes rqhttp.Routes
 
-func getSession() (*mgo.Session, error) {
-	session, err := mgo.Dial(EnvMongoDB())
-	if err != nil {
-		return nil, err
+func (s ApiRoutes) RootHandler(w http.ResponseWriter, r *http.Request) {
+	content := template.Must(template.New("RootPage").Parse(rootHtml))
+	routesHtml := ""
+	for _, v := range s {
+		routesHtml += fmt.Sprintf(endpointLine, v.Method, v.Path)
 	}
-
-	session.SetMode(mgo.Monotonic, true)
-
-	cols, err := session.DB("").CollectionNames()
-	if err != nil {
-		return nil, err
-	}
-	if indexOfInStringSlice(cols, models.C_VENDORS_NAME) == -1 {
-		logger.Println("The collection 'vendors' was not found")
-
-		for _, v := range vendorsCollection {
-			err = session.
-				DB("").
-				C(models.C_VENDORS_NAME).
-				Insert(v)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-
-	return session, err
+	
+	content.Execute(w, template.HTML(routesHtml))
 }
