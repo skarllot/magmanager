@@ -19,42 +19,38 @@
 package main
 
 import (
-	"encoding/json"
-	"io"
-	"io/ioutil"
-	"time"
+	"html/template"
+	"fmt"
+	"net/http"
+	rqhttp "github.com/skarllot/raiqub/http"
 )
 
-type (
-	Config struct {
-		HttpServer HttpServer `json:"httpServer"`
-		Database   Database   `json:"database"`
-	}
-
-	HttpServer struct {
-		Address string `json:"address"`
-		Port    uint16 `json:"port"`
-	}
-
-	Database struct {
-		Addrs    []string      `json:"addrs"`
-		Timeout  time.Duration `json:timeout""`
-		Database string        `json:"database"`
-		Username string        `json:"username"`
-		Password string        `json:"password"`
-	}
+const (
+rootHtml = `
+  <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>MagManager API</title>
+        <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.6.0/pure-min.css">
+      </head>
+      <body style="margin: 20px;">
+        <h2>Endpoints</h2>
+        {{.}}
+      </body>
+    </html>
+`
+	endpointLine = `<p>[%s] %s</p>`
 )
 
-func ParseConfig(r io.Reader) (*Config, error) {
-	content, err := ioutil.ReadAll(r)
-	if err != nil {
-		return nil, err
-	}
+type ApiRoutes rqhttp.Routes
 
-	cfg := &Config{}
-	if err := json.Unmarshal(content, cfg); err != nil {
-		return nil, err
+func (s ApiRoutes) RootHandler(w http.ResponseWriter, r *http.Request) {
+	content := template.Must(template.New("RootPage").Parse(rootHtml))
+	routesHtml := ""
+	for _, v := range s {
+		routesHtml += fmt.Sprintf(endpointLine, v.Method, v.Path)
 	}
-
-	return cfg, nil
+	
+	content.Execute(w, template.HTML(routesHtml))
 }

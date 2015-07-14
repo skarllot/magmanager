@@ -16,44 +16,39 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-package main
+package crypt
 
 import (
-	"github.com/skarllot/magmanager/models"
-	"gopkg.in/mgo.v2"
+	"testing"
 )
 
-var vendorsCollection []models.Vendor
+func TestSaltUnpredictability(t *testing.T) {
+	dict := make(map[string]bool)
+	s := NewSalter(NewRandomSourceList(), nil)
+	count := 0
 
-func init() {
-	vendorsCollection = models.PreInitVendors()
-}
+	for i := 0; i < DEFAULT_UNPRED_ROUNDS; i++ {
+		val := s.DefaultToken()
 
-func getSession() (*mgo.Session, error) {
-	session, err := mgo.Dial(EnvMongoDB())
-	if err != nil {
-		return nil, err
-	}
-
-	session.SetMode(mgo.Monotonic, true)
-
-	cols, err := session.DB("").CollectionNames()
-	if err != nil {
-		return nil, err
-	}
-	if indexOfInStringSlice(cols, models.C_VENDORS_NAME) == -1 {
-		logger.Println("The collection 'vendors' was not found")
-
-		for _, v := range vendorsCollection {
-			err = session.
-				DB("").
-				C(models.C_VENDORS_NAME).
-				Insert(v)
-			if err != nil {
-				return nil, err
-			}
+		if _, ok := dict[val]; ok {
+			count++
+		} else {
+			dict[val] = true
 		}
 	}
 
-	return session, err
+	if count > 0 {
+		t.Errorf(
+			"Salter class could not generate unpredictable data: %d of %d",
+			count, DEFAULT_UNPRED_ROUNDS)
+	}
+}
+
+func BenchmarkSalter(b *testing.B) {
+	salter := NewSalter(NewRandomSourceList(), nil)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		salter.DefaultToken()
+	}
 }

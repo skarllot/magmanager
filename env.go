@@ -19,41 +19,23 @@
 package main
 
 import (
-	"github.com/skarllot/magmanager/models"
-	"gopkg.in/mgo.v2"
+	"os"
 )
 
-var vendorsCollection []models.Vendor
+func EnvPort() string {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
-func init() {
-	vendorsCollection = models.PreInitVendors()
+	return ":" + port
 }
 
-func getSession() (*mgo.Session, error) {
-	session, err := mgo.Dial(EnvMongoDB())
-	if err != nil {
-		return nil, err
+func EnvMongoDB() string {
+	mongo := os.Getenv("MONGODB")
+	if mongo == "" {
+		logger.Fatal("No connection string provided")
 	}
-
-	session.SetMode(mgo.Monotonic, true)
-
-	cols, err := session.DB("").CollectionNames()
-	if err != nil {
-		return nil, err
-	}
-	if indexOfInStringSlice(cols, models.C_VENDORS_NAME) == -1 {
-		logger.Println("The collection 'vendors' was not found")
-
-		for _, v := range vendorsCollection {
-			err = session.
-				DB("").
-				C(models.C_VENDORS_NAME).
-				Insert(v)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-
-	return session, err
+	
+	return mongo
 }
