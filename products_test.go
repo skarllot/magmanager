@@ -19,7 +19,6 @@
 package main
 
 import (
-	"encoding/json"
 	"bytes"
 	"fmt"
 	"log"
@@ -161,11 +160,6 @@ func TestProductsBasic(t *testing.T) {
 		p.Name = p.Id.Hex() + p.Name
 		p.Technology = models.Technology(p.Id.Hex())
 		client.Put(url, http.StatusNoContent, &p)
-		
-		var dbVendors []models.Vendor
-		client.Get(ts.URL+"/vendor", http.StatusOK, &dbVendors)
-		out, _ := json.Marshal(dbVendors)
-		t.Logf("%s", out)
 
 		var dbProduct models.Product
 		client.Get(url, http.StatusOK, &dbProduct)
