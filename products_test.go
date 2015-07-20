@@ -19,6 +19,8 @@
 package main
 
 import (
+	"encoding/json"
+	"bytes"
 	"fmt"
 	"log"
 	"net/http"
@@ -33,22 +35,23 @@ import (
 )
 
 var (
-	testSampleVendors = []models.Vendor{
-		models.Vendor{
+	testSampleProducts = []models.Product{
+		models.Product{
 			bson.ObjectId(""),
-			"Vendor001",
-			[]models.Product{},
+			models.TECH_LTO6,
+			"LTO-6",
 		},
-		models.Vendor{
+		models.Product{
 			bson.ObjectId(""),
-			"Vendor002",
-			[]models.Product{},
+			models.TECH_FILE,
+			"Raw file",
 		},
 	}
 )
 
-func TestVendorsBasic(t *testing.T) {
-	logger = log.New(NullWriter{}, "", log.LstdFlags)
+func TestProductsBasic(t *testing.T) {
+	var buf bytes.Buffer
+	logger = log.New(&buf, "", log.LstdFlags)
 
 	mongo := test.NewMongoDBEnvironment(t)
 	if !mongo.Applicability() {
@@ -74,6 +77,7 @@ func TestVendorsBasic(t *testing.T) {
 	defer session.Close()
 
 	reference := vendorsCollection[:]
+	vendorId := reference[0].Id
 
 	router := createMux(session)
 	ts := httptest.NewServer(router)
@@ -82,39 +86,48 @@ func TestVendorsBasic(t *testing.T) {
 	client := NewHttpClient(t)
 
 	// =========================================================================
-	// Test GetVendorList
+	// Test GetProductList
 	// =========================================================================
-	t.Log("Testing GetVendorList")
-	url := fmt.Sprintf("%s/vendor", ts.URL)
-	var dbVendors []models.Vendor
-	client.Get(url, http.StatusOK, &dbVendors)
-
-	if len(reference) != len(dbVendors) {
-		t.Fatal("Length of vendor list do not match")
-	}
-
-	for i, v := range dbVendors {
-		if err := compareVendor(&reference[i], &v); err != nil {
-			t.Errorf("vendor[%d] do not match: %s\n", i, err)
-		}
-	}
-	// =========================================================================
-
-	// =========================================================================
-	// Test GetVendor
-	// =========================================================================
-	t.Log("Testing GetVendor")
+	t.Log("Testing GetProductList")
 	for i, _ := range reference {
-		url := fmt.Sprintf("%s/vendor/%s", ts.URL, reference[i].Id.Hex())
-		var dbVendor models.Vendor
-		client.Get(url, http.StatusOK, &dbVendor)
+		url := fmt.Sprintf("%s/vendor/%s/product", ts.URL, reference[i].Id.Hex())
+		var dbProducts []models.Product
+		client.Get(url, http.StatusOK, &dbProducts)
 
-		if err := compareVendor(&reference[i], &dbVendor); err != nil {
-			t.Errorf("Vendor do not match: %s\n", err)
+		if len(reference[i].Products) != len(dbProducts) {
+			t.Fatal("Length of product list do not match")
+		}
+
+		for j, p := range dbProducts {
+			if err := compareProduct(
+				&reference[i].Products[j], &p); err != nil {
+				t.Errorf("product[%d] do not match: %s\n", j, err)
+			}
+		}
+	}
+	// =========================================================================
+
+	// =========================================================================
+	// Test GetProduct
+	// =========================================================================
+	t.Log("Testing GetProduct")
+	for i, _ := range reference {
+		for j, _ := range reference[i].Products {
+			url := fmt.Sprintf("%s/vendor/%s/product/%s",
+				ts.URL, reference[i].Id.Hex(),
+				reference[i].Products[j].Id.Hex())
+			var dbProduct models.Product
+			client.Get(url, http.StatusOK, &dbProduct)
+
+			if err := compareProduct(
+				&reference[i].Products[j], &dbProduct); err != nil {
+				t.Errorf("Product do not match: %s\n", err)
+			}
 		}
 	}
 
-	url = fmt.Sprintf("%s/vendor/%s", ts.URL, bson.NewObjectId().Hex())
+	url := fmt.Sprintf("%s/vendor/%s/product/%s",
+		ts.URL, reference[0].Id.Hex(), bson.NewObjectId().Hex())
 	var jerr rqhttp.JsonError
 	client.Get(url, http.StatusNotFound, &jerr)
 	if jerr.Status != http.StatusNotFound {
@@ -123,45 +136,52 @@ func TestVendorsBasic(t *testing.T) {
 	// =========================================================================
 
 	// =========================================================================
-	// Test CreateVendor
+	// Test CreateProduct
 	// =========================================================================
-	t.Log("Testing CreateVendor")
-	for i, _ := range testSampleVendors {
-		url := fmt.Sprintf("%s/vendor", ts.URL)
-		var dbVendor models.Vendor
-		client.Post(url, http.StatusCreated, &testSampleVendors[i], &dbVendor)
+	t.Log("Testing CreateProduct")
+	for i, _ := range testSampleProducts {
+		url := fmt.Sprintf("%s/vendor/%s/product", ts.URL, vendorId.Hex())
+		var dbProduct models.Product
+		client.Post(url, http.StatusCreated, &testSampleProducts[i], &dbProduct)
 
-		if err := compareVendor(&testSampleVendors[i], &dbVendor); err != nil {
-			t.Errorf("Vendor do not match: %v\n", err)
+		if err := compareProduct(&testSampleProducts[i], &dbProduct); err != nil {
+			t.Errorf("Product do not match: %v\n", err)
 		}
-		testSampleVendors[i].Id = dbVendor.Id
+		testSampleProducts[i].Id = dbProduct.Id
 	}
 	// =========================================================================
 
 	// =========================================================================
-	// Test UpdateVendor
+	// Test UpdateProduct
 	// =========================================================================
-	t.Log("Testing UpdateVendor")
-	for _, v := range testSampleVendors {
-		url := fmt.Sprintf("%s/vendor/%s", ts.URL, v.Id.Hex())
-		v.Name = v.Id.Hex() + v.Name
-		v.Products = []models.Product{models.Product{}, models.Product{}}
-		client.Put(url, http.StatusNoContent, &v)
+	t.Log("Testing UpdateProduct")
+	for _, p := range testSampleProducts {
+		url := fmt.Sprintf("%s/vendor/%s/product/%s",
+			ts.URL, vendorId.Hex(), p.Id.Hex())
+		p.Name = p.Id.Hex() + p.Name
+		p.Technology = models.Technology(p.Id.Hex())
+		client.Put(url, http.StatusNoContent, &p)
+		
+		var dbVendors []models.Vendor
+		client.Get(ts.URL+"/vendor", http.StatusOK, &dbVendors)
+		out, _ := json.Marshal(dbVendors)
+		t.Logf("%s", out)
 
-		var dbVendor models.Vendor
-		client.Get(url, http.StatusOK, &dbVendor)
-		if err := compareVendor(&v, &dbVendor); err != nil {
-			t.Errorf("Vendor was not updated: %v\n", err)
+		var dbProduct models.Product
+		client.Get(url, http.StatusOK, &dbProduct)
+		if err := compareProduct(&p, &dbProduct); err != nil {
+			t.Errorf("Product was not updated: %v\n", err)
 		}
 	}
 	// =========================================================================
 
 	// =========================================================================
-	// Test RemoveVendor
+	// Test RemoveProduct
 	// =========================================================================
-	t.Log("Testing RemoveVendor")
-	for _, v := range testSampleVendors {
-		url := fmt.Sprintf("%s/vendor/%s", ts.URL, v.Id.Hex())
+	t.Log("Testing RemoveProduct")
+	for _, p := range testSampleProducts {
+		url := fmt.Sprintf("%s/vendor/%s/product/%s",
+			ts.URL, vendorId.Hex(), p.Id.Hex())
 		client.Delete(url, http.StatusNoContent)
 
 		client.Get(url, http.StatusNotFound, nil)
@@ -169,21 +189,21 @@ func TestVendorsBasic(t *testing.T) {
 	// =========================================================================
 }
 
-func compareVendor(v1 *models.Vendor, v2 *models.Vendor) error {
-	if string(v1.Id) != "" && v1.Id != v2.Id {
+func compareProduct(p1 *models.Product, p2 *models.Product) error {
+	if string(p1.Id) != "" && p1.Id != p2.Id {
 		return fmt.Errorf(
-			"Vendor ID do not match. Found '%s' instead of '%s'",
-			v2.Id.Hex(), v1.Id.Hex())
+			"Product ID do not match. Found '%s' instead of '%s'",
+			p2.Id.Hex(), p1.Id.Hex())
 	}
-	if v1.Name != v2.Name {
+	if p1.Name != p2.Name {
 		return fmt.Errorf(
-			"Vendor name do not match. Found '%s' instead of '%s'",
-			v2.Name, v1.Name)
+			"Product name do not match. Found '%s' instead of '%s'",
+			p2.Name, p1.Name)
 	}
-	if len(v1.Products) != len(v2.Products) {
+	if p1.Technology != p2.Technology {
 		return fmt.Errorf(
-			"Product list do not match. Found %d items instead of %d",
-			len(v2.Products), len(v1.Products))
+			"Product technology do not match. Found %d items instead of %d",
+			p2.Technology, p1.Technology)
 	}
 
 	return nil

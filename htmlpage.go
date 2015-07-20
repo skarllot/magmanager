@@ -19,14 +19,15 @@
 package main
 
 import (
-	"html/template"
 	"fmt"
+	"html/template"
 	"net/http"
+
 	rqhttp "github.com/skarllot/raiqub/http"
 )
 
 const (
-rootHtml = `
+	rootHtml = `
   <!DOCTYPE html>
     <html>
       <head>
@@ -51,6 +52,6 @@ func (s ApiRoutes) RootHandler(w http.ResponseWriter, r *http.Request) {
 	for _, v := range s {
 		routesHtml += fmt.Sprintf(endpointLine, v.Method, v.Path)
 	}
-	
+
 	content.Execute(w, template.HTML(routesHtml))
 }

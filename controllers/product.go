@@ -72,6 +72,28 @@ func (self *ProductController) GetProduct(
 	rqhttp.JsonWrite(w, http.StatusOK, v.Products[0])
 }
 
+func (self *ProductController) GetProductList(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	var vid bson.ObjectId
+	if !readObjectId(r, "vid", &vid) {
+		jerr := rqhttp.NewJsonErrorFromError(
+			http.StatusGone, InvalidObjectId("vendor"))
+		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		return
+	}
+
+	v := models.Vendor{}
+	err := self.dbCollection.FindId(vid).One(&v)
+	if err != nil {
+		writeObjectIdError(w, vid.Hex(), err)
+		return
+	}
+
+	rqhttp.JsonWrite(w, http.StatusOK, v.Products)
+}
+
 func (self *ProductController) CreateProduct(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -126,8 +148,16 @@ func (self *ProductController) UpdateProduct(
 		return
 	}
 
-	p.Id = bson.ObjectId("")
-	//err := self.dbCollection
+	p.Id = pid
+	err := self.dbCollection.Update(
+		bson.M{"products": bson.M{"$elemMatch": bson.M{"_id": pid}}},
+		bson.M{"$set": bson.M{"products.$": p}})
+	if err != nil {
+		writeObjectIdError(w, pid.Hex(), err)
+		return
+	}
+	
+	rqhttp.JsonWrite(w, http.StatusNoContent, nil)
 }
 
 func (self *ProductController) RemoveProduct(
@@ -160,6 +190,13 @@ func (self *ProductController) RemoveProduct(
 
 func (self *ProductController) Routes() rqhttp.Routes {
 	return rqhttp.Routes{
+		rqhttp.Route{
+			"GetProductList",
+			"GET",
+			"/vendor/{vid}/product",
+			false,
+			self.GetProductList,
+		},
 		rqhttp.Route{
 			"GetProduct",
 			"GET",
