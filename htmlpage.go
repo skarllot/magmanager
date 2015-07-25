@@ -50,6 +50,10 @@ func (s ApiRoutes) RootHandler(w http.ResponseWriter, r *http.Request) {
 	content := template.Must(template.New("RootPage").Parse(rootHtml))
 	routesHtml := ""
 	for _, v := range s {
+		if v.Method == rqhttp.DEFAULT_CORS_PREFLIGHT_METHOD {
+			continue
+		}
+
 		routesHtml += fmt.Sprintf(endpointLine, v.Method, v.Path)
 	}
 

@@ -15,7 +15,7 @@
 		},
 		{
 			"ImportPath": "github.com/skarllot/raiqub",
-			"Rev": "5898f803c700aae0154132eb9c995a970eababaf"
+			"Rev": "a127b8ee515af5b69516105ac7201ea9ff44181e"
 		},
 		{
 			"ImportPath": "gopkg.in/mgo.v2",

@@ -29,6 +29,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/skarllot/magmanager/controllers"
@@ -41,7 +42,8 @@ var (
 )
 
 func init() {
-	logger = log.New(os.Stderr, "magmanager", log.LstdFlags|log.Lshortfile)
+	//logger = log.New(os.Stderr, "magmanager ", log.LstdFlags|log.Lshortfile)
+	logger = log.New(os.Stderr, "magmanager ", log.LstdFlags)
 }
 
 func main() {
@@ -62,19 +64,41 @@ func createMux(session *mgo.Session) http.Handler {
 		controllers.NewVendorController(session.DB("")),
 		controllers.NewProductController(session.DB("")),
 	)
+
+	cors := rqhttp.NewCORSHandler()
+	routes = append(routes, cors.CreatePreflight(routes)...)
+
+	middlewares := rqhttp.Chain{
+		LogMiddleware,
+		rqhttp.RecoverHandlerJson,
+		(&rqhttp.CORSMiddleware{*cors, false}).Handle,
+	}
+
 	for _, r := range routes {
 		router.
 			Methods(r.Method).
 			Path(r.Path).
 			Name(r.Name).
-			Handler(r.ActionFunc)
+			Handler(middlewares.Get(r.ActionFunc))
 	}
 
 	router.
 		Methods("GET").
 		Path("/").
 		Name("RootPage").
-		HandlerFunc(ApiRoutes(routes).RootHandler)
+		Handler(middlewares.Get(
+		http.HandlerFunc(ApiRoutes(routes).RootHandler)))
 
 	return router
+}
+
+func LogMiddleware(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		t1 := time.Now()
+		next.ServeHTTP(w, r)
+		t2 := time.Now()
+		logger.Printf("[%s] %q %v\n", r.Method, r.URL.String(), t2.Sub(t1))
+	}
+
+	return http.HandlerFunc(fn)
 }
