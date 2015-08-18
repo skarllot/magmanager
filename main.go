@@ -63,6 +63,7 @@ func createMux(session *mgo.Session) http.Handler {
 	routes := rqhttp.MergeRoutes(
 		controllers.NewVendorController(session.DB("")),
 		controllers.NewProductController(session.DB("")),
+		controllers.NewTechnologyController(session.DB("")),
 	)
 
 	cors := rqhttp.NewCORSHandler()
