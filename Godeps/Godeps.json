@@ -1,26 +1,34 @@
 {
 	"ImportPath": "github.com/skarllot/magmanager",
-	"GoVersion": "go1.4.2",
+	"GoVersion": "go1.5.1",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/gorilla/context",
-			"Rev": "215affda49addc4c8ef7e2534915df2c8c35c6cd"
+			"Rev": "1c83b3eabd45b6d76072b66b746c20815fb2872d"
 		},
 		{
 			"ImportPath": "github.com/gorilla/mux",
-			"Rev": "ba336c9cfb43552c90de6cb2ceedd3271c747558"
+			"Rev": "ad4d7a5882b961e07e2626045eb995c022ac6664"
+		},
+		{
+			"ImportPath": "github.com/raiqub/http",
+			"Rev": "6f7a1e27b9468fceee0aee600ab80e8c8f57159a"
+		},
+		{
+			"ImportPath": "github.com/raiqub/rest",
+			"Rev": "dbf7571426c01ed875aa851cafd722d2ab6fa051"
 		},
 		{
 			"ImportPath": "github.com/skarllot/raiqub",
-			"Rev": "1694aa335e22fb8027e56d72d3608f293577eb4a"
+			"Rev": "a35940b3faa97c93ca3cd7725ca66eaf1db76cb0"
 		},
 		{
 			"ImportPath": "gopkg.in/mgo.v2",
-			"Comment": "r2015.06.03-3-g3569c88",
-			"Rev": "3569c88678d88179dcbd68d02ab081cbca3cd4d0"
+			"Comment": "r2015.10.05",
+			"Rev": "f402e3a216db333ae6b3ba68b9152a34a0bc6984"
 		}
 	]
 }

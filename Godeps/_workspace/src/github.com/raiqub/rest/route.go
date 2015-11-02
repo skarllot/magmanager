@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package http
+package rest
 
 import (
 	"net/http"

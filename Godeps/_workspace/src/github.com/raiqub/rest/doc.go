@@ -15,27 +15,18 @@
  */
 
 /*
-Package http provides operations to help HTTP server implementation.
-
-Chain
-
-A Chain provides a function to chain HTTP handlers, also know as middlewares,
-before a specified HTTP handler. A Chain is basically a slice of middlewares.
-
-HttpHeader
-
-A HttpHeader provides functions to help handle HTTP headers, both for reading
-from client request and write to server response. Additionally provides some
-pre-defined headers.
+Package rest provides operations to implement a RESTful API.
 
 Route
 
 A Route provides a easy way to define HTTP routes and handle it.
 
-SessionCache
+Rest
 
-A SessionCache provides session tokens to uniquely identify an user session and
-links it to specified data. Each token expires automatically if it is not used
-after defined time.
+A Rest provides an URL router for a RESTful API.
+
+Route
+
+A Route provides a easy way to define HTTP routes and handle it.
 */
-package http
+package rest

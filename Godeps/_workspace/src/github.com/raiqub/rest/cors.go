@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package http
+package rest
 
 import (
 	"net/http"
@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	rqhttp "github.com/raiqub/http"
 	"github.com/skarllot/raiqub"
 )
 
@@ -93,7 +94,7 @@ type CORSPreflight struct {
 
 // ServeHTTP handle a pre-flight request.
 func (s *CORSPreflight) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	origin := HttpHeader_Origin().GetReader(r.Header)
+	origin := rqhttp.HttpHeader_Origin().GetReader(r.Header)
 	status := http.StatusBadRequest
 	msg := ""
 	defer func() {
@@ -107,10 +108,10 @@ func (s *CORSPreflight) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		method := HttpHeader_AccessControlRequestMethod().
+		method := rqhttp.HttpHeader_AccessControlRequestMethod().
 			GetReader(r.Header).Value
 		header := strings.Split(
-			HttpHeader_AccessControlRequestHeaders().
+			rqhttp.HttpHeader_AccessControlRequestHeaders().
 				GetReader(r.Header).Value, ", ")
 		if len(header) == 1 && header[0] == "" {
 			header = []string{}
@@ -122,7 +123,7 @@ func (s *CORSPreflight) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if len(s.Headers) == 0 {
-			HttpHeader_AccessControlAllowHeaders().
+			rqhttp.HttpHeader_AccessControlAllowHeaders().
 				SetWriter(w.Header())
 		} else {
 			if len(header) > 0 &&
@@ -130,22 +131,22 @@ func (s *CORSPreflight) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				msg = "Header not allowed"
 				return
 			}
-			HttpHeader_AccessControlAllowHeaders().
+			rqhttp.HttpHeader_AccessControlAllowHeaders().
 				SetValue(strings.Join(s.Headers, ", ")).
 				SetWriter(w.Header())
 		}
 
-		HttpHeader_AccessControlAllowMethods().
+		rqhttp.HttpHeader_AccessControlAllowMethods().
 			SetValue(strings.Join(s.Methods, ", ")).
 			SetWriter(w.Header())
-		HttpHeader_AccessControlAllowOrigin().
+		rqhttp.HttpHeader_AccessControlAllowOrigin().
 			SetValue(origin.Value).
 			SetWriter(w.Header())
-		HttpHeader_AccessControlAllowCredentials().
+		rqhttp.HttpHeader_AccessControlAllowCredentials().
 			SetValue(strconv.FormatBool(s.UseCredentials)).
 			SetWriter(w.Header())
 		// Optional
-		HttpHeader_AccessControlMaxAge().
+		rqhttp.HttpHeader_AccessControlMaxAge().
 			SetValue(strconv.Itoa(int(DEFAULT_CORS_MAX_AGE))).
 			SetWriter(w.Header())
 		status = http.StatusOK
@@ -164,24 +165,24 @@ type CORSMiddleware struct {
 // Handle is a HTTP handler for CORS-able API.
 func (s *CORSMiddleware) Handle(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		origin := HttpHeader_Origin().GetReader(r.Header)
+		origin := rqhttp.HttpHeader_Origin().GetReader(r.Header)
 		if r.Method != DEFAULT_CORS_PREFLIGHT_METHOD && origin.Value != "" {
 			if !s.PredicateOrigin(origin.Value) {
 				return
 			}
 
-			HttpHeader_AccessControlAllowOrigin().
+			rqhttp.HttpHeader_AccessControlAllowOrigin().
 				SetValue(origin.Value).
 				SetWriter(w.Header())
-			HttpHeader_AccessControlAllowCredentials().
+			rqhttp.HttpHeader_AccessControlAllowCredentials().
 				SetValue(strconv.FormatBool(s.UseCredentials)).
 				SetWriter(w.Header())
 			if len(s.Headers) > 0 {
-				HttpHeader_AccessControlAllowHeaders().
+				rqhttp.HttpHeader_AccessControlAllowHeaders().
 					SetValue(strings.Join(s.Headers, ", ")).
 					SetWriter(w.Header())
 			} else {
-				HttpHeader_AccessControlAllowHeaders().
+				rqhttp.HttpHeader_AccessControlAllowHeaders().
 					SetWriter(w.Header())
 			}
 		}
