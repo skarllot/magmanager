@@ -22,8 +22,9 @@ import (
 	"fmt"
 	"net/http"
 
+	rqhttp "github.com/raiqub/http"
+	"github.com/raiqub/rest"
 	"github.com/skarllot/magmanager/models"
-	rqhttp "github.com/skarllot/raiqub/http"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -156,7 +157,7 @@ func (self *ProductController) UpdateProduct(
 		writeObjectIdError(w, pid.Hex(), err)
 		return
 	}
-	
+
 	rqhttp.JsonWrite(w, http.StatusNoContent, nil)
 }
 
@@ -188,37 +189,37 @@ func (self *ProductController) RemoveProduct(
 	rqhttp.JsonWrite(w, http.StatusNoContent, nil)
 }
 
-func (self *ProductController) Routes() rqhttp.Routes {
-	return rqhttp.Routes{
-		rqhttp.Route{
+func (self *ProductController) Routes() rest.Routes {
+	return rest.Routes{
+		rest.Route{
 			"GetProductList",
 			"GET",
 			"/vendor/{vid}/product",
 			false,
 			self.GetProductList,
 		},
-		rqhttp.Route{
+		rest.Route{
 			"GetProduct",
 			"GET",
 			"/vendor/{vid}/product/{pid}",
 			false,
 			self.GetProduct,
 		},
-		rqhttp.Route{
+		rest.Route{
 			"CreateProduct",
 			"POST",
 			"/vendor/{vid}/product",
 			false,
 			self.CreateProduct,
 		},
-		rqhttp.Route{
+		rest.Route{
 			"RemoveProduct",
 			"DELETE",
 			"/vendor/{vid}/product/{pid}",
 			false,
 			self.RemoveProduct,
 		},
-		rqhttp.Route{
+		rest.Route{
 			"UpdateProduct",
 			"PUT",
 			"/vendor/{vid}/product/{pid}",

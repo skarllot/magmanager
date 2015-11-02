@@ -31,10 +31,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/raiqub/rest"
 	"github.com/skarllot/magmanager/controllers"
-	rqhttp "github.com/skarllot/raiqub/http"
-	"gopkg.in/mgo.v2"
 )
 
 var (
@@ -53,44 +51,22 @@ func main() {
 	}
 	defer session.Close()
 
-	router := createMux(session)
+	restMux := rest.NewRest()
+
+	// Middlewares
+	restMux.AddMiddlewarePublic(LogMiddleware)
+	restMux.AddMiddlewarePublic(rest.RecoverHandlerJson)
+	restMux.EnableCORS()
+
+	// Resources
+	restMux.AddResource(controllers.NewVendorController(session.DB("")))
+	restMux.AddResource(controllers.NewProductController(session.DB("")))
+	restMux.AddResource(controllers.NewTechnologyController(session.DB("")))
+	// Shows available endpoints on root page
+	restMux.AddResourceDetached(ApiRoutes(restMux.ResourcesRoutes()))
+
 	fmt.Println("HTTP server listening on", EnvPort())
-	http.ListenAndServe(EnvPort(), router)
-}
-
-func createMux(session *mgo.Session) http.Handler {
-	router := mux.NewRouter()
-	routes := rqhttp.MergeRoutes(
-		controllers.NewVendorController(session.DB("")),
-		controllers.NewProductController(session.DB("")),
-		controllers.NewTechnologyController(session.DB("")),
-	)
-
-	cors := rqhttp.NewCORSHandler()
-	routes = append(routes, cors.CreatePreflight(routes)...)
-
-	middlewares := rqhttp.Chain{
-		LogMiddleware,
-		rqhttp.RecoverHandlerJson,
-		(&rqhttp.CORSMiddleware{*cors, false}).Handle,
-	}
-
-	for _, r := range routes {
-		router.
-			Methods(r.Method).
-			Path(r.Path).
-			Name(r.Name).
-			Handler(middlewares.Get(r.ActionFunc))
-	}
-
-	router.
-		Methods("GET").
-		Path("/").
-		Name("RootPage").
-		Handler(middlewares.Get(
-		http.HandlerFunc(ApiRoutes(routes).RootHandler)))
-
-	return router
+	restMux.ListenAndServe(EnvPort())
 }
 
 func LogMiddleware(next http.Handler) http.Handler {

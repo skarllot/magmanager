@@ -21,8 +21,9 @@ package controllers
 import (
 	"net/http"
 
+	rqhttp "github.com/raiqub/http"
+	"github.com/raiqub/rest"
 	"github.com/skarllot/magmanager/models"
-	rqhttp "github.com/skarllot/raiqub/http"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -53,9 +54,9 @@ func (self *TechnologyController) GetTechnologyList(
 	rqhttp.JsonWrite(w, http.StatusOK, list)
 }
 
-func (self *TechnologyController) Routes() rqhttp.Routes {
-	return rqhttp.Routes{
-		rqhttp.Route{
+func (self *TechnologyController) Routes() rest.Routes {
+	return rest.Routes{
+		rest.Route{
 			"GetTechnologyList",
 			"GET",
 			"/technology",
@@ -66,4 +67,4 @@ func (self *TechnologyController) Routes() rqhttp.Routes {
 }
 
 // Ensure that TechnologyController implements Routable interface.
-var _ rqhttp.Routable = (*TechnologyController)(nil)
+var _ rest.Routable = (*TechnologyController)(nil)

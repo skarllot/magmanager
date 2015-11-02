@@ -23,7 +23,7 @@ import (
 	"html/template"
 	"net/http"
 
-	rqhttp "github.com/skarllot/raiqub/http"
+	"github.com/raiqub/rest"
 )
 
 const (
@@ -44,13 +44,13 @@ const (
 	endpointLine = `<p>[%s] %s</p>`
 )
 
-type ApiRoutes rqhttp.Routes
+type ApiRoutes rest.Routes
 
 func (s ApiRoutes) RootHandler(w http.ResponseWriter, r *http.Request) {
 	content := template.Must(template.New("RootPage").Parse(rootHtml))
 	routesHtml := ""
 	for _, v := range s {
-		if v.Method == rqhttp.DEFAULT_CORS_PREFLIGHT_METHOD {
+		if v.Method == rest.DEFAULT_CORS_PREFLIGHT_METHOD {
 			continue
 		}
 
@@ -58,4 +58,16 @@ func (s ApiRoutes) RootHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	content.Execute(w, template.HTML(routesHtml))
+}
+
+func (s ApiRoutes) Routes() rest.Routes {
+	return rest.Routes{
+		rest.Route{
+			"RootPage",
+			"GET",
+			"/",
+			false,
+			s.RootHandler,
+		},
+	}
 }

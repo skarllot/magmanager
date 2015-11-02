@@ -23,7 +23,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	rqhttp "github.com/skarllot/raiqub/http"
+	rqhttp "github.com/raiqub/http"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )

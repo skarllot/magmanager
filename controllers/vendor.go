@@ -22,8 +22,9 @@ import (
 	"fmt"
 	"net/http"
 
+	rqhttp "github.com/raiqub/http"
+	"github.com/raiqub/rest"
 	"github.com/skarllot/magmanager/models"
-	rqhttp "github.com/skarllot/raiqub/http"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -145,37 +146,37 @@ func (self *VendorController) UpdateVendor(
 	rqhttp.JsonWrite(w, http.StatusNoContent, nil)
 }
 
-func (self *VendorController) Routes() rqhttp.Routes {
-	return rqhttp.Routes{
-		rqhttp.Route{
+func (self *VendorController) Routes() rest.Routes {
+	return rest.Routes{
+		rest.Route{
 			"GetVendorList",
 			"GET",
 			"/vendor",
 			false,
 			self.GetVendorList,
 		},
-		rqhttp.Route{
+		rest.Route{
 			"GetVendor",
 			"GET",
 			"/vendor/{id}",
 			false,
 			self.GetVendor,
 		},
-		rqhttp.Route{
+		rest.Route{
 			"CreateVendor",
 			"POST",
 			"/vendor",
 			false,
 			self.CreateVendor,
 		},
-		rqhttp.Route{
+		rest.Route{
 			"UpdateVendor",
 			"PUT",
 			"/vendor/{id}",
 			false,
 			self.UpdateVendor,
 		},
-		rqhttp.Route{
+		rest.Route{
 			"RemoveVendor",
 			"DELETE",
 			"/vendor/{id}",
@@ -186,4 +187,4 @@ func (self *VendorController) Routes() rqhttp.Routes {
 }
 
 // Ensure that VendorController implements Routable interface.
-var _ rqhttp.Routable = (*VendorController)(nil)
+var _ rest.Routable = (*VendorController)(nil)
