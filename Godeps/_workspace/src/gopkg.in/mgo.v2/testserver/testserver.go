@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"gopkg.in/mgo.v2"
+	"github.com/skarllot/magmanager/Godeps/_workspace/src/gopkg.in/mgo.v2"
 	"gopkg.in/tomb.v2"
 )
 

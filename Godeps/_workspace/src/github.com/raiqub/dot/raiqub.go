@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-package raiqub
+package dot
 
+// A PredicateStringFunc represents a function that defines a criteria and
+// determines whether specified string meets that criteria.
 type PredicateStringFunc func(string) bool
 
+// TrueForAll always returns true, regardless specified string.
 func TrueForAll(string) bool {
 	return true
 }

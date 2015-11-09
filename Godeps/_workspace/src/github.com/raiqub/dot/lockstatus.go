@@ -14,25 +14,13 @@
  * limitations under the License.
  */
 
-package raiqub
+package dot
 
-import (
-	"time"
+// A LockStatus represents the lock status of an object.
+type LockStatus int
+
+const (
+	Unlocked LockStatus = iota
+	ReadLocked
+	WriteLocked
 )
-
-// WaitFunc waits until specified function returns true.
-func WaitFunc(interval, timeout time.Duration, f func() bool) bool {
-	after := time.After(timeout)
-	for {
-		select {
-		case <-time.After(interval):
-			if f() {
-				return true
-			}
-		case <-after:
-			return false
-		}
-	}
-
-	return false
-}

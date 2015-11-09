@@ -3,7 +3,7 @@ package mgo
 import (
 	"bytes"
 
-	"gopkg.in/mgo.v2/bson"
+	"github.com/skarllot/magmanager/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 )
 
 // Bulk represents an operation that can be prepared with several

@@ -14,12 +14,22 @@
  * limitations under the License.
  */
 
-package raiqub
+package dot
 
-type LockStatus int
-
-const (
-	Unlocked LockStatus = iota
-	ReadLocked
-	WriteLocked
+import (
+	"net"
+	"time"
 )
+
+// WaitPeerListening wait for specified peer be ready for new connections.
+func WaitPeerListening(network, address string, timeout time.Duration) bool {
+	return WaitFunc(100*time.Millisecond, timeout, func() bool {
+		c, err := net.Dial(network, address)
+		if err == nil {
+			c.Close()
+			return true
+		}
+
+		return false
+	})
+}

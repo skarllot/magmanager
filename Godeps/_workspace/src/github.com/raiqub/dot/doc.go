@@ -15,6 +15,6 @@
  */
 
 /*
-Package raiqub provides some common tasks for Web Services implementations.
+Package dot provides implementation of very basic tasks.
 */
-package raiqub
+package dot

@@ -20,7 +20,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/skarllot/raiqub/docker"
+	"github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/skarllot/raiqub/docker"
 )
 
 const (

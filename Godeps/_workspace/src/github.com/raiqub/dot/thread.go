@@ -14,22 +14,25 @@
  * limitations under the License.
  */
 
-package raiqub
+package dot
 
 import (
-	"net"
 	"time"
 )
 
-// WaitPeerListening wait for specified peer be ready for new connections.
-func WaitPeerListening(network, address string, timeout time.Duration) bool {
-	return WaitFunc(100*time.Millisecond, timeout, func() bool {
-		c, err := net.Dial(network, address)
-		if err == nil {
-			c.Close()
-			return true
+// WaitFunc waits until specified function returns true.
+func WaitFunc(interval, timeout time.Duration, f func() bool) bool {
+	after := time.After(timeout)
+	for {
+		select {
+		case <-time.After(interval):
+			if f() {
+				return true
+			}
+		case <-after:
+			return false
 		}
+	}
 
-		return false
-	})
+	return false
 }

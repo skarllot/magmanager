@@ -14,16 +14,32 @@
 			"Rev": "ad4d7a5882b961e07e2626045eb995c022ac6664"
 		},
 		{
+			"ImportPath": "github.com/raiqub/dot",
+			"Rev": "e2bb347cd858572dc195837c836a032643c2434a"
+		},
+		{
 			"ImportPath": "github.com/raiqub/http",
 			"Rev": "6f7a1e27b9468fceee0aee600ab80e8c8f57159a"
 		},
 		{
 			"ImportPath": "github.com/raiqub/rest",
-			"Rev": "dbf7571426c01ed875aa851cafd722d2ab6fa051"
+			"Rev": "a648215668851ef178da3ece0a330a93178367de"
 		},
 		{
-			"ImportPath": "github.com/skarllot/raiqub",
-			"Rev": "a35940b3faa97c93ca3cd7725ca66eaf1db76cb0"
+			"ImportPath": "github.com/skarllot/raiqub/crypt",
+			"Rev": "93871aa31abc7e0af0624d0edf1e699cfa4700f1"
+		},
+		{
+			"ImportPath": "github.com/skarllot/raiqub/data",
+			"Rev": "93871aa31abc7e0af0624d0edf1e699cfa4700f1"
+		},
+		{
+			"ImportPath": "github.com/skarllot/raiqub/docker",
+			"Rev": "93871aa31abc7e0af0624d0edf1e699cfa4700f1"
+		},
+		{
+			"ImportPath": "github.com/skarllot/raiqub/test",
+			"Rev": "93871aa31abc7e0af0624d0edf1e699cfa4700f1"
 		},
 		{
 			"ImportPath": "gopkg.in/mgo.v2",

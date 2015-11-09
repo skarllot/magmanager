@@ -21,8 +21,8 @@ package http
 import (
 	"errors"
 	"fmt"
-	"github.com/skarllot/raiqub/crypt"
-	"github.com/skarllot/raiqub/data"
+	"github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/skarllot/raiqub/crypt"
+	"github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/skarllot/raiqub/data"
 	"time"
 )
 
