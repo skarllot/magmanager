@@ -21,7 +21,7 @@ package models
 import (
 	"time"
 
-	"github.com/skarllot/magmanager/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type PoolGroup struct {

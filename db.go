@@ -19,8 +19,8 @@
 package main
 
 import (
-	"github.com/skarllot/magmanager/Godeps/_workspace/src/gopkg.in/mgo.v2"
 	"github.com/skarllot/magmanager/models"
+	"gopkg.in/mgo.v2"
 )
 
 var vendorsCollection []models.Vendor

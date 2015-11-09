@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"net/http"
 
-	rqhttp "github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/raiqub/http"
-	"github.com/skarllot/magmanager/Godeps/_workspace/src/gopkg.in/mgo.v2"
+	rqhttp "github.com/raiqub/http"
+	"gopkg.in/mgo.v2"
 )
 
 // writeObjectIdError returns a not found object ID error when aplicable;

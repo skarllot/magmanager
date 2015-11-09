@@ -21,11 +21,11 @@ package controllers
 import (
 	"net/http"
 
-	rqhttp "github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/raiqub/http"
-	"github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/raiqub/rest"
-	"github.com/skarllot/magmanager/Godeps/_workspace/src/gopkg.in/mgo.v2"
-	"github.com/skarllot/magmanager/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
+	rqhttp "github.com/raiqub/http"
+	"github.com/raiqub/rest"
 	"github.com/skarllot/magmanager/models"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type TechnologyController struct {
