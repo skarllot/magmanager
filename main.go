@@ -31,7 +31,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/raiqub/rest"
+	"github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/raiqub/rest"
 	"github.com/skarllot/magmanager/controllers"
 )
 
@@ -51,22 +51,22 @@ func main() {
 	}
 	defer session.Close()
 
-	restMux := rest.NewRest()
+	router := rest.NewRest()
 
 	// Middlewares
-	restMux.AddMiddlewarePublic(LogMiddleware)
-	restMux.AddMiddlewarePublic(rest.RecoverHandlerJson)
-	restMux.EnableCORS()
+	router.AddMiddlewarePublic(LogMiddleware)
+	router.AddMiddlewarePublic(rest.RecoverHandlerJson)
+	router.EnableCORS()
 
 	// Resources
-	restMux.AddResource(controllers.NewVendorController(session.DB("")))
-	restMux.AddResource(controllers.NewProductController(session.DB("")))
-	restMux.AddResource(controllers.NewTechnologyController(session.DB("")))
+	router.AddResource(controllers.NewVendorController(session.DB("")))
+	router.AddResource(controllers.NewProductController(session.DB("")))
+	router.AddResource(controllers.NewTechnologyController(session.DB("")))
 	// Shows available endpoints on root page
-	restMux.AddResourceDetached(ApiRoutes(restMux.ResourcesRoutes()))
+	router.AddResource(ApiRoutes(router.ResourcesRoutes()))
 
 	fmt.Println("HTTP server listening on", EnvPort())
-	restMux.ListenAndServe(EnvPort())
+	http.ListenAndServe(EnvPort(), router)
 }
 
 func LogMiddleware(next http.Handler) http.Handler {

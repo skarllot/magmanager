@@ -26,10 +26,10 @@ import (
 	"os"
 	"testing"
 
+	rqhttp "github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/raiqub/http"
+	"github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/skarllot/raiqub/test"
+	"github.com/skarllot/magmanager/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/skarllot/magmanager/models"
-	rqhttp "github.com/skarllot/raiqub/http"
-	"github.com/skarllot/raiqub/test"
-	"gopkg.in/mgo.v2/bson"
 )
 
 var (

@@ -22,11 +22,11 @@ import (
 	"fmt"
 	"net/http"
 
-	rqhttp "github.com/raiqub/http"
-	"github.com/raiqub/rest"
+	rqhttp "github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/raiqub/http"
+	"github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/raiqub/rest"
+	"github.com/skarllot/magmanager/Godeps/_workspace/src/gopkg.in/mgo.v2"
+	"github.com/skarllot/magmanager/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/skarllot/magmanager/models"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type VendorController struct {
@@ -41,8 +41,8 @@ func (self *VendorController) GetVendor(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	var id bson.ObjectId
-	if !readObjectId(r, "id", &id) {
+	id, ok := rest.Vars(r).GetObjectId("id")
+	if !ok {
 		jerr := rqhttp.NewJsonErrorFromError(
 			http.StatusGone, InvalidObjectId("vendor"))
 		rqhttp.JsonWrite(w, jerr.Status, jerr)
@@ -50,6 +50,7 @@ func (self *VendorController) GetVendor(
 	}
 
 	v := models.Vendor{}
+	// db.vendors.findOne({_id: id})
 	err := self.dbCollection.FindId(id).One(&v)
 	if err != nil {
 		writeObjectIdError(w, id.Hex(), err)
@@ -64,6 +65,7 @@ func (self *VendorController) GetVendorList(
 	r *http.Request,
 ) {
 	list := make([]models.Vendor, 0)
+	// db.vendors.find()
 	err := self.dbCollection.Find(nil).All(&list)
 	if err != nil {
 		jerr := rqhttp.NewJsonErrorFromError(http.StatusInternalServerError, err)
@@ -84,6 +86,7 @@ func (self *VendorController) CreateVendor(
 	}
 	v.Id = bson.NewObjectId()
 
+	// db.vendors.insert(v)
 	err := self.dbCollection.Insert(v)
 	if err != nil {
 		jerr := rqhttp.NewJsonErrorFromError(
@@ -102,14 +105,15 @@ func (self *VendorController) RemoveVendor(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	var id bson.ObjectId
-	if !readObjectId(r, "id", &id) {
+	id, ok := rest.Vars(r).GetObjectId("id")
+	if !ok {
 		jerr := rqhttp.NewJsonErrorFromError(
 			http.StatusGone, InvalidObjectId("vendor"))
 		rqhttp.JsonWrite(w, jerr.Status, jerr)
 		return
 	}
 
+	// db.vendors.remove({_id: id})
 	err := self.dbCollection.RemoveId(id)
 	if err != nil {
 		writeObjectIdError(w, id.Hex(), err)
@@ -123,8 +127,8 @@ func (self *VendorController) UpdateVendor(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	var id bson.ObjectId
-	if !readObjectId(r, "id", &id) {
+	id, ok := rest.Vars(r).GetObjectId("id")
+	if !ok {
 		jerr := rqhttp.NewJsonErrorFromError(
 			http.StatusGone, InvalidObjectId("vendor"))
 		rqhttp.JsonWrite(w, jerr.Status, jerr)
@@ -137,6 +141,7 @@ func (self *VendorController) UpdateVendor(
 	}
 
 	v.Id = bson.ObjectId("")
+	// db.vendors.update({_id: id}, v)
 	err := self.dbCollection.UpdateId(id, v)
 	if err != nil {
 		writeObjectIdError(w, id.Hex(), err)

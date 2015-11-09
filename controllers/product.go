@@ -22,11 +22,11 @@ import (
 	"fmt"
 	"net/http"
 
-	rqhttp "github.com/raiqub/http"
-	"github.com/raiqub/rest"
+	rqhttp "github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/raiqub/http"
+	"github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/raiqub/rest"
+	"github.com/skarllot/magmanager/Godeps/_workspace/src/gopkg.in/mgo.v2"
+	"github.com/skarllot/magmanager/Godeps/_workspace/src/gopkg.in/mgo.v2/bson"
 	"github.com/skarllot/magmanager/models"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type ProductController struct {
@@ -41,14 +41,17 @@ func (self *ProductController) GetProduct(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	var vid, pid bson.ObjectId
-	if !readObjectId(r, "vid", &vid) {
+	vars := rest.Vars(r)
+
+	vid, ok := vars.GetObjectId("vid")
+	if !ok {
 		jerr := rqhttp.NewJsonErrorFromError(
 			http.StatusGone, InvalidObjectId("vendor"))
 		rqhttp.JsonWrite(w, jerr.Status, jerr)
 		return
 	}
-	if !readObjectId(r, "pid", &pid) {
+	pid, ok := vars.GetObjectId("pid")
+	if !ok {
 		jerr := rqhttp.NewJsonErrorFromError(
 			http.StatusGone, InvalidObjectId("product"))
 		rqhttp.JsonWrite(w, jerr.Status, jerr)
@@ -56,6 +59,8 @@ func (self *ProductController) GetProduct(
 	}
 
 	v := models.Vendor{}
+	// db.vendors.findOne({ _id: vid },
+	//	{ products: { $elemMatch: { _id: pid } } })
 	sel := bson.M{"products": bson.M{"$elemMatch": bson.M{"_id": pid}}}
 	err := self.dbCollection.Find(bson.M{"_id": vid}).Select(sel).One(&v)
 	if err != nil {
@@ -77,8 +82,8 @@ func (self *ProductController) GetProductList(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	var vid bson.ObjectId
-	if !readObjectId(r, "vid", &vid) {
+	vid, ok := rest.Vars(r).GetObjectId("vid")
+	if !ok {
 		jerr := rqhttp.NewJsonErrorFromError(
 			http.StatusGone, InvalidObjectId("vendor"))
 		rqhttp.JsonWrite(w, jerr.Status, jerr)
@@ -86,6 +91,7 @@ func (self *ProductController) GetProductList(
 	}
 
 	v := models.Vendor{}
+	// db.vendors.findOne({ _id: vid })
 	err := self.dbCollection.FindId(vid).One(&v)
 	if err != nil {
 		writeObjectIdError(w, vid.Hex(), err)
@@ -99,8 +105,8 @@ func (self *ProductController) CreateProduct(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	var vid bson.ObjectId
-	if !readObjectId(r, "vid", &vid) {
+	vid, ok := rest.Vars(r).GetObjectId("vid")
+	if !ok {
 		jerr := rqhttp.NewJsonErrorFromError(
 			http.StatusGone, InvalidObjectId("vendor"))
 		rqhttp.JsonWrite(w, jerr.Status, jerr)
@@ -113,6 +119,7 @@ func (self *ProductController) CreateProduct(
 	}
 	p.Id = bson.NewObjectId()
 
+	// db.vendors.update({ _id: vid }, { $push: { products: p } })
 	err := self.dbCollection.
 		UpdateId(vid, bson.M{"$push": bson.M{"products": p}})
 	if err != nil {
@@ -130,14 +137,17 @@ func (self *ProductController) UpdateProduct(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	var vid, pid bson.ObjectId
-	if !readObjectId(r, "vid", &vid) {
+	vars := rest.Vars(r)
+
+	vid, ok := vars.GetObjectId("vid")
+	if !ok {
 		jerr := rqhttp.NewJsonErrorFromError(
 			http.StatusGone, InvalidObjectId("vendor"))
 		rqhttp.JsonWrite(w, jerr.Status, jerr)
 		return
 	}
-	if !readObjectId(r, "pid", &pid) {
+	pid, ok := vars.GetObjectId("pid")
+	if !ok {
 		jerr := rqhttp.NewJsonErrorFromError(
 			http.StatusGone, InvalidObjectId("product"))
 		rqhttp.JsonWrite(w, jerr.Status, jerr)
@@ -150,8 +160,11 @@ func (self *ProductController) UpdateProduct(
 	}
 
 	p.Id = pid
+	// db.vendors.update(
+	//  { _id: vid, products: { $elemMatch: { _id: pid } } },
+	//	{ $set: { "products.$": p } })
 	err := self.dbCollection.Update(
-		bson.M{"products": bson.M{"$elemMatch": bson.M{"_id": pid}}},
+		bson.M{"_id": vid, "products": bson.M{"$elemMatch": bson.M{"_id": pid}}},
 		bson.M{"$set": bson.M{"products.$": p}})
 	if err != nil {
 		writeObjectIdError(w, pid.Hex(), err)
@@ -165,20 +178,24 @@ func (self *ProductController) RemoveProduct(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	var vid, pid bson.ObjectId
-	if !readObjectId(r, "vid", &vid) {
+	vars := rest.Vars(r)
+
+	vid, ok := vars.GetObjectId("vid")
+	if !ok {
 		jerr := rqhttp.NewJsonErrorFromError(
 			http.StatusGone, InvalidObjectId("vendor"))
 		rqhttp.JsonWrite(w, jerr.Status, jerr)
 		return
 	}
-	if !readObjectId(r, "pid", &pid) {
+	pid, ok := vars.GetObjectId("pid")
+	if !ok {
 		jerr := rqhttp.NewJsonErrorFromError(
 			http.StatusGone, InvalidObjectId("product"))
 		rqhttp.JsonWrite(w, jerr.Status, jerr)
 		return
 	}
 
+	// db.vendors.update({ _id: vid }, { $pull: { products: { _id: pid } } })
 	err := self.dbCollection.
 		UpdateId(vid, bson.M{"$pull": bson.M{"products": bson.M{"_id": pid}}})
 	if err != nil {

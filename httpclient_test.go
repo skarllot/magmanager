@@ -24,7 +24,7 @@ import (
 	"net/http"
 	"testing"
 
-	rqhttp "github.com/skarllot/raiqub/http"
+	rqhttp "github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/raiqub/http"
 )
 
 type HttpClient struct {

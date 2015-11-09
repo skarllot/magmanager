@@ -22,21 +22,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gorilla/mux"
-	rqhttp "github.com/raiqub/http"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	rqhttp "github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/raiqub/http"
+	"github.com/skarllot/magmanager/Godeps/_workspace/src/gopkg.in/mgo.v2"
 )
-
-func readObjectId(r *http.Request, key string, id *bson.ObjectId) bool {
-	strId := mux.Vars(r)[key]
-	if !bson.IsObjectIdHex(strId) {
-		return false
-	}
-
-	*id = bson.ObjectIdHex(strId)
-	return true
-}
 
 // writeObjectIdError returns a not found object ID error when aplicable;
 // otherwise returns a internal server error.

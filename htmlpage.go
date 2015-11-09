@@ -23,7 +23,7 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/raiqub/rest"
+	"github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/raiqub/rest"
 )
 
 const (
