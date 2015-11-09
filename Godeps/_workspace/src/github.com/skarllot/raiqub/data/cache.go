@@ -20,7 +20,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/raiqub/dot"
+	"github.com/raiqub/dot"
 )
 
 // A Cache provides in-memory key:value cache that expires after defined

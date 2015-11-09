@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"net/http"
 
-	rqhttp "github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/raiqub/http"
+	rqhttp "github.com/raiqub/http"
 )
 
 // RecoverHandlerJson is a HTTP request middleware that captures panic errors

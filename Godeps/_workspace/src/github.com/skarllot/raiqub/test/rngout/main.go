@@ -23,7 +23,7 @@ package main
 
 import (
 	"bufio"
-	"github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/skarllot/raiqub/crypt"
+	"github.com/skarllot/raiqub/crypt"
 	"os"
 )
 

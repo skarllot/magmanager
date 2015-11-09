@@ -20,8 +20,8 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/gorilla/mux"
-	rqhttp "github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/raiqub/http"
+	"github.com/gorilla/mux"
+	rqhttp "github.com/raiqub/http"
 )
 
 // A Rest register resources and middlewares for a HTTP handler.

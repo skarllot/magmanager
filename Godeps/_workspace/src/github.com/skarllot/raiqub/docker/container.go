@@ -28,7 +28,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/raiqub/dot"
+	"github.com/raiqub/dot"
 )
 
 // A Container represents a Docker container.

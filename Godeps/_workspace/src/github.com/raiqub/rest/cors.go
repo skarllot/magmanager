@@ -22,8 +22,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/raiqub/dot"
-	rqhttp "github.com/skarllot/magmanager/Godeps/_workspace/src/github.com/raiqub/http"
+	"github.com/raiqub/dot"
+	rqhttp "github.com/raiqub/http"
 )
 
 const (
