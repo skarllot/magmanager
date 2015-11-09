@@ -30,9 +30,6 @@ import (
 	"net/http"
 	"os"
 	"time"
-
-	"github.com/raiqub/rest"
-	"github.com/skarllot/magmanager/controllers"
 )
 
 var (
@@ -45,25 +42,18 @@ func init() {
 }
 
 func main() {
-	session, err := getSession()
+	session, err := openSession(EnvMongoDB())
 	if err != nil {
 		logger.Fatalf("CreateDbSession: %s\n", err)
 	}
 	defer session.Close()
 
-	router := rest.NewRest()
+	err = session.FillCollectionsIfEmpty()
+	if err != nil {
+		logger.Fatalf("Fill collections: %s\n", err)
+	}
 
-	// Middlewares
-	router.AddMiddlewarePublic(LogMiddleware)
-	router.AddMiddlewarePublic(rest.RecoverHandlerJson)
-	router.EnableCORS()
-
-	// Resources
-	router.AddResource(controllers.NewVendorController(session.DB("")))
-	router.AddResource(controllers.NewProductController(session.DB("")))
-	router.AddResource(controllers.NewTechnologyController(session.DB("")))
-	// Shows available endpoints on root page
-	router.AddResource(ApiRoutes(router.ResourcesRoutes()))
+	router := NewRouter(session)
 
 	fmt.Println("HTTP server listening on", EnvPort())
 	http.ListenAndServe(EnvPort(), router)

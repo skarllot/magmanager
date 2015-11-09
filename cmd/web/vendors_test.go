@@ -23,13 +23,16 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	rqhttp "github.com/raiqub/http"
 	"github.com/skarllot/magmanager/models"
 	"github.com/skarllot/raiqub/test"
 	"gopkg.in/mgo.v2/bson"
+)
+
+const (
+	MONGODB_URL_TPL = "mongodb://%s:%d/magmanager"
 )
 
 var (
@@ -65,17 +68,21 @@ func TestVendorsBasic(t *testing.T) {
 		t.Fatalf("Error getting MongoDB IP address: %s\n", err)
 	}
 
-	os.Setenv("MONGODB",
-		fmt.Sprintf("mongodb://%s:%d/magmanager", net[0].IpAddress, net[0].Port))
-	session, err := getSession()
+	mgourl := fmt.Sprintf(MONGODB_URL_TPL, net[0].IpAddress, net[0].Port)
+	session, err := openSession(mgourl)
 	if err != nil {
 		t.Fatalf("Error opening a MongoDB session: %s\n", err)
 	}
 	defer session.Close()
+	
+	err = session.FillCollectionsIfEmpty()
+	if err != nil {
+		t.Fatalf("Error inserting data on empty collections: %s\n", err)
+	}
 
 	reference := vendorsCollection[:]
 
-	router := createMux(session)
+	router := NewRouter(session)
 	ts := httptest.NewServer(router)
 	defer ts.Close()
 

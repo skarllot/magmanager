@@ -21,6 +21,7 @@ package main
 import (
 	"github.com/skarllot/magmanager/models"
 	"gopkg.in/mgo.v2"
+	"github.com/raiqub/dot"
 )
 
 var vendorsCollection []models.Vendor
@@ -29,31 +30,42 @@ func init() {
 	vendorsCollection = models.PreInitVendors()
 }
 
-func getSession() (*mgo.Session, error) {
-	session, err := mgo.Dial(EnvMongoDB())
+type Session struct {
+	*mgo.Session
+}
+
+func openSession(url string) (*Session, error) {
+	session, err := mgo.Dial(url)
 	if err != nil {
 		return nil, err
 	}
 
 	session.SetMode(mgo.Monotonic, true)
 
-	cols, err := session.DB("").CollectionNames()
+	_, err = session.DB("").CollectionNames()
 	if err != nil {
 		return nil, err
 	}
-	if indexOfInStringSlice(cols, models.C_VENDORS_NAME) == -1 {
+	
+	return &Session{session}, nil
+}
+
+func (s *Session) FillCollectionsIfEmpty() error {
+	cols, _ := s.DB("").CollectionNames()
+	
+	if !dot.StringSlice(cols).Exists(models.C_VENDORS_NAME, false) {
 		logger.Println("The collection 'vendors' was not found")
 
 		for _, v := range vendorsCollection {
-			err = session.
+			err := s.
 				DB("").
 				C(models.C_VENDORS_NAME).
 				Insert(v)
 			if err != nil {
-				return nil, err
+				return err
 			}
 		}
 	}
-
-	return session, err
+	
+	return nil
 }

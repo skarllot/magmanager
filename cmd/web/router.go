@@ -19,19 +19,28 @@
 package main
 
 import (
-	"io"
+	"github.com/raiqub/rest"
+	"github.com/skarllot/magmanager/controllers"
 )
 
-type NullCloser struct {
-	io.Reader
+type Router struct {
+	*rest.Rest
 }
 
-func (NullCloser) Close() error {
-	return nil
-}
+func NewRouter(session *Session) *Router {
+	router := rest.NewRest()
 
-type NullWriter struct{}
+	// Middlewares
+	router.AddMiddlewarePublic(LogMiddleware)
+	router.AddMiddlewarePublic(rest.RecoverHandlerJson)
+	router.EnableCORS()
 
-func (NullWriter) Write(p []byte) (int, error) {
-	return len(p), nil
+	// Resources
+	router.AddResource(controllers.NewVendorController(session.DB("")))
+	router.AddResource(controllers.NewProductController(session.DB("")))
+	router.AddResource(controllers.NewTechnologyController(session.DB("")))
+	// Shows available endpoints on root page
+	router.AddResource(ApiRoutes(router.ResourcesRoutes()))
+
+	return &Router{router}
 }
