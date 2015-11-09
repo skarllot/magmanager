@@ -27,19 +27,19 @@
 		},
 		{
 			"ImportPath": "github.com/skarllot/raiqub/crypt",
-			"Rev": "93871aa31abc7e0af0624d0edf1e699cfa4700f1"
+			"Rev": "109d5084e159af82f0595d0bd3528606356db4de"
 		},
 		{
 			"ImportPath": "github.com/skarllot/raiqub/data",
-			"Rev": "93871aa31abc7e0af0624d0edf1e699cfa4700f1"
+			"Rev": "109d5084e159af82f0595d0bd3528606356db4de"
 		},
 		{
 			"ImportPath": "github.com/skarllot/raiqub/docker",
-			"Rev": "93871aa31abc7e0af0624d0edf1e699cfa4700f1"
+			"Rev": "109d5084e159af82f0595d0bd3528606356db4de"
 		},
 		{
 			"ImportPath": "github.com/skarllot/raiqub/test",
-			"Rev": "93871aa31abc7e0af0624d0edf1e699cfa4700f1"
+			"Rev": "109d5084e159af82f0595d0bd3528606356db4de"
 		},
 		{
 			"ImportPath": "gopkg.in/mgo.v2",
