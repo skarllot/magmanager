@@ -1,1 +1,1 @@
-web: magmanager
+web: cmd/web/web
