@@ -22,11 +22,15 @@ import (
 	"fmt"
 	"net/http"
 
-	rqhttp "github.com/raiqub/http"
-	"github.com/raiqub/rest"
 	"github.com/skarllot/magmanager/models"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"gopkg.in/raiqub/rest.v0"
+	"gopkg.in/raiqub/web.v0"
+)
+
+const (
+	productInputMaxLength = 8192
 )
 
 type ProductController struct {
@@ -45,16 +49,20 @@ func (self *ProductController) GetProduct(
 
 	vid, ok := vars.GetObjectId("vid")
 	if !ok {
-		jerr := rqhttp.NewJsonErrorFromError(
-			http.StatusGone, InvalidObjectId("vendor"))
-		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		jerr := web.NewJSONError().
+			FromError(InvalidObjectId("vendor")).
+			Status(http.StatusGone).
+			Build()
+		web.JSONWrite(w, jerr.Status, jerr)
 		return
 	}
 	pid, ok := vars.GetObjectId("pid")
 	if !ok {
-		jerr := rqhttp.NewJsonErrorFromError(
-			http.StatusGone, InvalidObjectId("product"))
-		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		jerr := web.NewJSONError().
+			FromError(InvalidObjectId("product")).
+			Status(http.StatusGone).
+			Build()
+		web.JSONWrite(w, jerr.Status, jerr)
 		return
 	}
 
@@ -69,13 +77,15 @@ func (self *ProductController) GetProduct(
 		return
 	}
 	if len(v.Products) != 1 {
-		jerr := rqhttp.NewJsonErrorFromError(
-			http.StatusNotFound, fmt.Errorf("More than one product was found"))
-		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		jerr := web.NewJSONError().
+			FromError(fmt.Errorf("More than one product was found")).
+			Status(http.StatusNotFound).
+			Build()
+		web.JSONWrite(w, jerr.Status, jerr)
 		return
 	}
 
-	rqhttp.JsonWrite(w, http.StatusOK, v.Products[0])
+	web.JSONWrite(w, http.StatusOK, v.Products[0])
 }
 
 func (self *ProductController) GetProductList(
@@ -84,9 +94,11 @@ func (self *ProductController) GetProductList(
 ) {
 	vid, ok := rest.Vars(r).GetObjectId("vid")
 	if !ok {
-		jerr := rqhttp.NewJsonErrorFromError(
-			http.StatusGone, InvalidObjectId("vendor"))
-		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		jerr := web.NewJSONError().
+			FromError(InvalidObjectId("vendor")).
+			Status(http.StatusGone).
+			Build()
+		web.JSONWrite(w, jerr.Status, jerr)
 		return
 	}
 
@@ -98,7 +110,7 @@ func (self *ProductController) GetProductList(
 		return
 	}
 
-	rqhttp.JsonWrite(w, http.StatusOK, v.Products)
+	web.JSONWrite(w, http.StatusOK, v.Products)
 }
 
 func (self *ProductController) CreateProduct(
@@ -107,14 +119,16 @@ func (self *ProductController) CreateProduct(
 ) {
 	vid, ok := rest.Vars(r).GetObjectId("vid")
 	if !ok {
-		jerr := rqhttp.NewJsonErrorFromError(
-			http.StatusGone, InvalidObjectId("vendor"))
-		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		jerr := web.NewJSONError().
+			FromError(InvalidObjectId("vendor")).
+			Status(http.StatusGone).
+			Build()
+		web.JSONWrite(w, jerr.Status, jerr)
 		return
 	}
 
 	p := models.Product{}
-	if !rqhttp.JsonRead(r.Body, &p, w) {
+	if !web.JSONRead(r.Body, productInputMaxLength, &p, w) {
 		return
 	}
 	p.Id = bson.NewObjectId()
@@ -127,10 +141,11 @@ func (self *ProductController) CreateProduct(
 		return
 	}
 
-	rqhttp.HttpHeader_Location().
+	web.NewHeader().
+		Location().
 		SetValue(fmt.Sprintf("/vendor/%s/product/%s", vid.Hex(), p.Id.Hex())).
-		SetWriter(w.Header())
-	rqhttp.JsonWrite(w, http.StatusCreated, p)
+		Write(w.Header())
+	web.JSONWrite(w, http.StatusCreated, p)
 }
 
 func (self *ProductController) UpdateProduct(
@@ -141,21 +156,25 @@ func (self *ProductController) UpdateProduct(
 
 	vid, ok := vars.GetObjectId("vid")
 	if !ok {
-		jerr := rqhttp.NewJsonErrorFromError(
-			http.StatusGone, InvalidObjectId("vendor"))
-		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		jerr := web.NewJSONError().
+			FromError(InvalidObjectId("vendor")).
+			Status(http.StatusGone).
+			Build()
+		web.JSONWrite(w, jerr.Status, jerr)
 		return
 	}
 	pid, ok := vars.GetObjectId("pid")
 	if !ok {
-		jerr := rqhttp.NewJsonErrorFromError(
-			http.StatusGone, InvalidObjectId("product"))
-		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		jerr := web.NewJSONError().
+			FromError(InvalidObjectId("product")).
+			Status(http.StatusGone).
+			Build()
+		web.JSONWrite(w, jerr.Status, jerr)
 		return
 	}
 
 	p := models.Product{}
-	if !rqhttp.JsonRead(r.Body, &p, w) {
+	if !web.JSONRead(r.Body, productInputMaxLength, &p, w) {
 		return
 	}
 
@@ -171,7 +190,7 @@ func (self *ProductController) UpdateProduct(
 		return
 	}
 
-	rqhttp.JsonWrite(w, http.StatusNoContent, nil)
+	web.JSONWrite(w, http.StatusNoContent, nil)
 }
 
 func (self *ProductController) RemoveProduct(
@@ -182,16 +201,20 @@ func (self *ProductController) RemoveProduct(
 
 	vid, ok := vars.GetObjectId("vid")
 	if !ok {
-		jerr := rqhttp.NewJsonErrorFromError(
-			http.StatusGone, InvalidObjectId("vendor"))
-		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		jerr := web.NewJSONError().
+			FromError(InvalidObjectId("vendor")).
+			Status(http.StatusGone).
+			Build()
+		web.JSONWrite(w, jerr.Status, jerr)
 		return
 	}
 	pid, ok := vars.GetObjectId("pid")
 	if !ok {
-		jerr := rqhttp.NewJsonErrorFromError(
-			http.StatusGone, InvalidObjectId("product"))
-		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		jerr := web.NewJSONError().
+			FromError(InvalidObjectId("product")).
+			Status(http.StatusGone).
+			Build()
+		web.JSONWrite(w, jerr.Status, jerr)
 		return
 	}
 
@@ -203,7 +226,7 @@ func (self *ProductController) RemoveProduct(
 		return
 	}
 
-	rqhttp.JsonWrite(w, http.StatusNoContent, nil)
+	web.JSONWrite(w, http.StatusNoContent, nil)
 }
 
 func (self *ProductController) Routes() rest.Routes {

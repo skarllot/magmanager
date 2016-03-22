@@ -19,8 +19,8 @@
 package main
 
 import (
-	"github.com/raiqub/rest"
 	"github.com/skarllot/magmanager/controllers"
+	"gopkg.in/raiqub/rest.v0"
 )
 
 type Router struct {

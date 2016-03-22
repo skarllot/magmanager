@@ -26,10 +26,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	rqhttp "github.com/raiqub/http"
 	"github.com/skarllot/magmanager/models"
 	"github.com/skarllot/raiqub/test"
 	"gopkg.in/mgo.v2/bson"
+	"gopkg.in/raiqub/web.v0"
 )
 
 var (
@@ -72,7 +72,7 @@ func TestProductsBasic(t *testing.T) {
 		t.Fatalf("Error opening a MongoDB session: %s\n", err)
 	}
 	defer session.Close()
-	
+
 	err = session.FillCollectionsIfEmpty()
 	if err != nil {
 		t.Fatalf("Error inserting data on empty collections: %s\n", err)
@@ -130,7 +130,7 @@ func TestProductsBasic(t *testing.T) {
 
 	url := fmt.Sprintf("%s/vendor/%s/product/%s",
 		ts.URL, reference[0].Id.Hex(), bson.NewObjectId().Hex())
-	var jerr rqhttp.JsonError
+	var jerr web.JSONError
 	client.Get(url, http.StatusNotFound, &jerr)
 	if jerr.Status != http.StatusNotFound {
 		t.Fatalf("Invalid JsonError object: %#v", jerr)

@@ -23,7 +23,7 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/raiqub/rest"
+	"gopkg.in/raiqub/rest.v0"
 )
 
 const (

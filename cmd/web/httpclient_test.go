@@ -24,7 +24,7 @@ import (
 	"net/http"
 	"testing"
 
-	rqhttp "github.com/raiqub/http"
+	"gopkg.in/raiqub/web.v0"
 )
 
 type HttpClient struct {
@@ -41,7 +41,7 @@ func NewHttpClient(t *testing.T) *HttpClient {
 
 func (s *HttpClient) Delete(url string, code int) {
 	req, _ := http.NewRequest("DELETE", url, nil)
-	rqhttp.HttpHeader_ContentType_Json().SetWriter(req.Header)
+	web.NewHeader().ContentType().JSON().Write(req.Header)
 
 	res, err := s.client.Do(req)
 	if err != nil {
@@ -65,7 +65,7 @@ func (s *HttpClient) Post(url string, code int, input, output interface{}) {
 	defer buf.Close()
 
 	res, err := s.client.Post(
-		url, rqhttp.HttpHeader_ContentType_Json().Value, buf)
+		url, web.NewHeader().ContentType().JSON().Value, buf)
 	if err != nil {
 		s.t.Fatal(err.Error())
 	}
@@ -75,7 +75,7 @@ func (s *HttpClient) Post(url string, code int, input, output interface{}) {
 
 func (s *HttpClient) Put(url string, code int, input interface{}) {
 	req, _ := http.NewRequest("PUT", url, nil)
-	rqhttp.HttpHeader_ContentType_Json().SetWriter(req.Header)
+	web.NewHeader().ContentType().JSON().Write(req.Header)
 	req.Body = s.parseInput(input)
 
 	res, err := s.client.Do(req)
@@ -104,7 +104,7 @@ func (s *HttpClient) parseOutput(
 	defer res.Body.Close()
 
 	if res.StatusCode != code {
-		var jerr rqhttp.JsonError
+		var jerr web.JSONError
 		json.NewDecoder(res.Body).Decode(&jerr)
 		s.t.Fatalf("Unexpected HTTP status. Expected '%d' got '%d'\n",
 			code, res.StatusCode)

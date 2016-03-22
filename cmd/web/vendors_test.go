@@ -25,10 +25,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	rqhttp "github.com/raiqub/http"
 	"github.com/skarllot/magmanager/models"
 	"github.com/skarllot/raiqub/test"
 	"gopkg.in/mgo.v2/bson"
+	"gopkg.in/raiqub/web.v0"
 )
 
 const (
@@ -122,7 +122,7 @@ func TestVendorsBasic(t *testing.T) {
 	}
 
 	url = fmt.Sprintf("%s/vendor/%s", ts.URL, bson.NewObjectId().Hex())
-	var jerr rqhttp.JsonError
+	var jerr web.JSONError
 	client.Get(url, http.StatusNotFound, &jerr)
 	if jerr.Status != http.StatusNotFound {
 		t.Fatalf("Invalid JsonError object: %#v", jerr)

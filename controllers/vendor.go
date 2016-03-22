@@ -22,11 +22,15 @@ import (
 	"fmt"
 	"net/http"
 
-	rqhttp "github.com/raiqub/http"
-	"github.com/raiqub/rest"
 	"github.com/skarllot/magmanager/models"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"gopkg.in/raiqub/rest.v0"
+	"gopkg.in/raiqub/web.v0"
+)
+
+const (
+	vendorInputMaxLength = 8192
 )
 
 type VendorController struct {
@@ -43,9 +47,11 @@ func (self *VendorController) GetVendor(
 ) {
 	id, ok := rest.Vars(r).GetObjectId("id")
 	if !ok {
-		jerr := rqhttp.NewJsonErrorFromError(
-			http.StatusGone, InvalidObjectId("vendor"))
-		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		jerr := web.NewJSONError().
+			FromError(InvalidObjectId("vendor")).
+			Status(http.StatusGone).
+			Build()
+		web.JSONWrite(w, jerr.Status, jerr)
 		return
 	}
 
@@ -57,7 +63,7 @@ func (self *VendorController) GetVendor(
 		return
 	}
 
-	rqhttp.JsonWrite(w, http.StatusOK, v)
+	web.JSONWrite(w, http.StatusOK, v)
 }
 
 func (self *VendorController) GetVendorList(
@@ -68,12 +74,14 @@ func (self *VendorController) GetVendorList(
 	// db.vendors.find()
 	err := self.dbCollection.Find(nil).All(&list)
 	if err != nil {
-		jerr := rqhttp.NewJsonErrorFromError(http.StatusInternalServerError, err)
-		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		jerr := web.NewJSONError().
+			FromError(err).
+			Build()
+		web.JSONWrite(w, jerr.Status, jerr)
 		return
 	}
 
-	rqhttp.JsonWrite(w, http.StatusOK, list)
+	web.JSONWrite(w, http.StatusOK, list)
 }
 
 func (self *VendorController) CreateVendor(
@@ -81,7 +89,7 @@ func (self *VendorController) CreateVendor(
 	r *http.Request,
 ) {
 	v := models.Vendor{}
-	if !rqhttp.JsonRead(r.Body, &v, w) {
+	if !web.JSONRead(r.Body, vendorInputMaxLength, &v, w) {
 		return
 	}
 	v.Id = bson.NewObjectId()
@@ -89,16 +97,18 @@ func (self *VendorController) CreateVendor(
 	// db.vendors.insert(v)
 	err := self.dbCollection.Insert(v)
 	if err != nil {
-		jerr := rqhttp.NewJsonErrorFromError(
-			http.StatusInternalServerError, err)
-		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		jerr := web.NewJSONError().
+			FromError(err).
+			Build()
+		web.JSONWrite(w, jerr.Status, jerr)
 		return
 	}
 
-	rqhttp.HttpHeader_Location().
+	web.NewHeader().
+		Location().
 		SetValue(fmt.Sprintf("/vendor/%s", v.Id.Hex())).
-		SetWriter(w.Header())
-	rqhttp.JsonWrite(w, http.StatusCreated, v)
+		Write(w.Header())
+	web.JSONWrite(w, http.StatusCreated, v)
 }
 
 func (self *VendorController) RemoveVendor(
@@ -107,9 +117,11 @@ func (self *VendorController) RemoveVendor(
 ) {
 	id, ok := rest.Vars(r).GetObjectId("id")
 	if !ok {
-		jerr := rqhttp.NewJsonErrorFromError(
-			http.StatusGone, InvalidObjectId("vendor"))
-		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		jerr := web.NewJSONError().
+			FromError(InvalidObjectId("vendor")).
+			Status(http.StatusGone).
+			Build()
+		web.JSONWrite(w, jerr.Status, jerr)
 		return
 	}
 
@@ -120,7 +132,7 @@ func (self *VendorController) RemoveVendor(
 		return
 	}
 
-	rqhttp.JsonWrite(w, http.StatusNoContent, nil)
+	web.JSONWrite(w, http.StatusNoContent, nil)
 }
 
 func (self *VendorController) UpdateVendor(
@@ -129,14 +141,16 @@ func (self *VendorController) UpdateVendor(
 ) {
 	id, ok := rest.Vars(r).GetObjectId("id")
 	if !ok {
-		jerr := rqhttp.NewJsonErrorFromError(
-			http.StatusGone, InvalidObjectId("vendor"))
-		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		jerr := web.NewJSONError().
+			FromError(InvalidObjectId("vendor")).
+			Status(http.StatusGone).
+			Build()
+		web.JSONWrite(w, jerr.Status, jerr)
 		return
 	}
 
 	v := models.Vendor{}
-	if !rqhttp.JsonRead(r.Body, &v, w) {
+	if !web.JSONRead(r.Body, vendorInputMaxLength, &v, w) {
 		return
 	}
 
@@ -148,7 +162,7 @@ func (self *VendorController) UpdateVendor(
 		return
 	}
 
-	rqhttp.JsonWrite(w, http.StatusNoContent, nil)
+	web.JSONWrite(w, http.StatusNoContent, nil)
 }
 
 func (self *VendorController) Routes() rest.Routes {

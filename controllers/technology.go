@@ -21,11 +21,11 @@ package controllers
 import (
 	"net/http"
 
-	rqhttp "github.com/raiqub/http"
-	"github.com/raiqub/rest"
 	"github.com/skarllot/magmanager/models"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"gopkg.in/raiqub/rest.v0"
+	"gopkg.in/raiqub/web.v0"
 )
 
 type TechnologyController struct {
@@ -45,13 +45,15 @@ func (self *TechnologyController) GetTechnologyList(
 		Find(bson.M{}).
 		Distinct("products.technology", &list)
 	if err != nil {
-		jerr := rqhttp.NewJsonErrorFromError(
-			http.StatusGone, err)
-		rqhttp.JsonWrite(w, jerr.Status, jerr)
+		jerr := web.NewJSONError().
+			FromError(err).
+			Status(http.StatusGone).
+			Build()
+		web.JSONWrite(w, jerr.Status, jerr)
 		return
 	}
 
-	rqhttp.JsonWrite(w, http.StatusOK, list)
+	web.JSONWrite(w, http.StatusOK, list)
 }
 
 func (self *TechnologyController) Routes() rest.Routes {

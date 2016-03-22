@@ -1,50 +1,64 @@
 {
 	"ImportPath": "github.com/skarllot/magmanager",
-	"GoVersion": "go1.5.1",
+	"GoVersion": "go1.5",
 	"Packages": [
-		"./..."
+		"github.com/skarllot/magmanager/cmd/web",
+		"github.com/skarllot/magmanager/controllers",
+		"github.com/skarllot/magmanager/models"
 	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/gorilla/context",
-			"Rev": "1c83b3eabd45b6d76072b66b746c20815fb2872d"
+			"Rev": "1ea25387ff6f684839d82767c1733ff4d4d15d0a"
 		},
 		{
 			"ImportPath": "github.com/gorilla/mux",
-			"Rev": "ad4d7a5882b961e07e2626045eb995c022ac6664"
+			"Rev": "0eeaf8392f5b04950925b8a69fe70f110fa7cbfc"
 		},
 		{
 			"ImportPath": "github.com/raiqub/dot",
-			"Rev": "e2bb347cd858572dc195837c836a032643c2434a"
-		},
-		{
-			"ImportPath": "github.com/raiqub/http",
-			"Rev": "6f7a1e27b9468fceee0aee600ab80e8c8f57159a"
-		},
-		{
-			"ImportPath": "github.com/raiqub/rest",
-			"Rev": "a648215668851ef178da3ece0a330a93178367de"
-		},
-		{
-			"ImportPath": "github.com/skarllot/raiqub/crypt",
-			"Rev": "109d5084e159af82f0595d0bd3528606356db4de"
-		},
-		{
-			"ImportPath": "github.com/skarllot/raiqub/data",
-			"Rev": "109d5084e159af82f0595d0bd3528606356db4de"
+			"Comment": "v1.1",
+			"Rev": "1e0df1f7c3477e39d42db774d7a52c912fd4d816"
 		},
 		{
 			"ImportPath": "github.com/skarllot/raiqub/docker",
-			"Rev": "109d5084e159af82f0595d0bd3528606356db4de"
+			"Comment": "v1.0",
+			"Rev": "c4b93379a68f8c01af0a2911645a8661c8e2ea82"
 		},
 		{
 			"ImportPath": "github.com/skarllot/raiqub/test",
-			"Rev": "109d5084e159af82f0595d0bd3528606356db4de"
+			"Comment": "v1.0",
+			"Rev": "c4b93379a68f8c01af0a2911645a8661c8e2ea82"
 		},
 		{
 			"ImportPath": "gopkg.in/mgo.v2",
-			"Comment": "r2015.10.05",
-			"Rev": "f402e3a216db333ae6b3ba68b9152a34a0bc6984"
+			"Comment": "r2016.02.04-1-gb6e2fa3",
+			"Rev": "b6e2fa371e64216a45e61072a96d4e3859f169da"
+		},
+		{
+			"ImportPath": "gopkg.in/raiqub/crypt.v0",
+			"Comment": "v0.1",
+			"Rev": "b2db4c8b353c9533fa665701da60ab11bcb59776"
+		},
+		{
+			"ImportPath": "gopkg.in/raiqub/data.v0",
+			"Comment": "v0.4-5-gc9ee01f",
+			"Rev": "c9ee01f9566070e20655d4aa8981d99eb0cedfc7"
+		},
+		{
+			"ImportPath": "gopkg.in/raiqub/dot.v1",
+			"Comment": "v1.1",
+			"Rev": "1e0df1f7c3477e39d42db774d7a52c912fd4d816"
+		},
+		{
+			"ImportPath": "gopkg.in/raiqub/rest.v0",
+			"Comment": "v0.2",
+			"Rev": "3b3535a2665085a19f74a672424fbfd51a32df3f"
+		},
+		{
+			"ImportPath": "gopkg.in/raiqub/web.v0",
+			"Comment": "v0.1",
+			"Rev": "289798b8414306f4a0ef587343ba3d3aad766e48"
 		}
 	]
 }

@@ -22,22 +22,25 @@ import (
 	"fmt"
 	"net/http"
 
-	rqhttp "github.com/raiqub/http"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/raiqub/web.v0"
 )
 
 // writeObjectIdError returns a not found object ID error when aplicable;
 // otherwise returns a internal server error.
 func writeObjectIdError(w http.ResponseWriter, id string, err error) {
-	var jerr rqhttp.JsonError
+	var jerr web.JSONError
 	if err == mgo.ErrNotFound {
-		jerr = rqhttp.NewJsonErrorFromError(
-			http.StatusNotFound, NotFoundObjectId(id))
+		jerr = web.NewJSONError().
+			FromError(NotFoundObjectId(id)).
+			Status(http.StatusNotFound).
+			Build()
 	} else {
-		jerr = rqhttp.NewJsonErrorFromError(
-			http.StatusInternalServerError, err)
+		jerr = web.NewJSONError().
+			FromError(err).
+			Build()
 	}
-	rqhttp.JsonWrite(w, jerr.Status, jerr)
+	web.JSONWrite(w, jerr.Status, jerr)
 }
 
 type InvalidObjectId string
