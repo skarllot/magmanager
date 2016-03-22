@@ -55,7 +55,7 @@ func TestVendorsBasic(t *testing.T) {
 
 	mongo := test.NewMongoDBEnvironment(t)
 	if !mongo.Applicability() {
-		t.Skip("This test connot be run because Docker is not acessible")
+		t.Skip("This test cannot be run because Docker is not acessible")
 	}
 
 	if !mongo.Run() {
@@ -74,7 +74,7 @@ func TestVendorsBasic(t *testing.T) {
 		t.Fatalf("Error opening a MongoDB session: %s\n", err)
 	}
 	defer session.Close()
-	
+
 	err = session.FillCollectionsIfEmpty()
 	if err != nil {
 		t.Fatalf("Error inserting data on empty collections: %s\n", err)
